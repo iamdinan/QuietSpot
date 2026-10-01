@@ -13,33 +13,36 @@ enum NoiseLevel: String, CaseIterable {
 }
 
 struct CafeSnapshot: Identifiable {
-    let id = UUID()
+    var id: String = UUID().uuidString
     let name: String
     let area: String
     let description: String
-    let imageName: String
+    var imageName: String = ""
     let latitude: Double
     let longitude: Double
-    var isFavorite: Bool
-    var updateOrder: Double
-    var noiseLevel: NoiseLevel
-    var wifi: String
-    var outlets: String
-    var crowd: String
-    var updatedAt: String
+    var isFavorite: Bool = false
+    var updateOrder: Double = .infinity
+    var noiseLevel: NoiseLevel? = nil
+    var wifi: String? = nil
+    var outlets: String? = nil
+    var crowd: String? = nil
+    var updatedAt: String? = nil
     var checkInHistory: [CafeCheckIn]? = nil
+    var imageURL: String? = nil
 
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 
-    // Sample history until check-ins are supplied by Firebase.
     var recentCheckIns: [CafeCheckIn] {
-        checkInHistory ?? [
-            CafeCheckIn(time: updatedAt, noiseLevel: noiseLevel, wifi: wifi, outlets: outlets, crowd: crowd),
-            CafeCheckIn(time: "3 hrs ago", noiseLevel: .moderate, wifi: "Strong Wi‑Fi", outlets: "Outlets full", crowd: "Crowded"),
-            CafeCheckIn(time: "5 hrs ago", noiseLevel: .quiet, wifi: "Strong Wi‑Fi", outlets: "Outlets free", crowd: "Uncrowded")
-        ]
+        if let checkInHistory { return checkInHistory }
+        guard let updatedAt, let noiseLevel, let wifi, let outlets, let crowd else { return [] }
+        return [CafeCheckIn(time: updatedAt, noiseLevel: noiseLevel, wifi: wifi, outlets: outlets, crowd: crowd)]
+    }
+
+    nonisolated static func latestFirst(_ lhs: Self, _ rhs: Self) -> Bool {
+        if lhs.updateOrder != rhs.updateOrder { return lhs.updateOrder < rhs.updateOrder }
+        return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
     }
 
     mutating func record(_ checkIn: CafeCheckIn) {

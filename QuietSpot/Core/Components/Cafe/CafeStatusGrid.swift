@@ -2,10 +2,10 @@ import SwiftUI
 
 struct CafeStatusGrid: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    private let noiseLevel: NoiseLevel
-    private let wifi: String
-    private let outlets: String
-    private let crowd: String
+    private let noiseLevel: NoiseLevel?
+    private let wifi: String?
+    private let outlets: String?
+    private let crowd: String?
 
     init(cafe: CafeSnapshot) {
         noiseLevel = cafe.noiseLevel
@@ -22,34 +22,40 @@ struct CafeStatusGrid: View {
     }
 
     var body: some View {
-        LazyVGrid(
-            columns: dynamicTypeSize.isAccessibilitySize
-                ? [GridItem(.flexible(), alignment: .leading)]
-                : [GridItem(.flexible(), alignment: .leading), GridItem(.flexible(), alignment: .leading)],
-            alignment: .leading,
-            spacing: 8
-        ) {
-            CompactStatusPill(
-                title: noiseLevel.rawValue,
-                icon: "speaker.wave.2",
-                tint: noiseLevel.tint,
-                accessibilityLabel: "Noise: \(noiseLevel.rawValue)"
-            )
-            CompactStatusPill(
-                title: wifi,
-                icon: "wifi",
-                tint: wifi == "Strong Wi‑Fi" ? AppColor.positive : AppColor.negative
-            )
-            CompactStatusPill(
-                title: outlets,
-                icon: "powerplug",
-                tint: outlets == "Outlets free" ? AppColor.positive : AppColor.negative
-            )
-            CompactStatusPill(
-                title: crowd,
-                icon: "person.2",
-                tint: crowd == "Uncrowded" ? AppColor.positive : AppColor.negative
-            )
+        if let noiseLevel, let wifi, let outlets, let crowd {
+            LazyVGrid(
+                columns: dynamicTypeSize.isAccessibilitySize
+                    ? [GridItem(.flexible(), alignment: .leading)]
+                    : [GridItem(.flexible(), alignment: .leading), GridItem(.flexible(), alignment: .leading)],
+                alignment: .leading,
+                spacing: 8
+            ) {
+                CompactStatusPill(
+                    title: noiseLevel.rawValue,
+                    icon: "speaker.wave.2",
+                    tint: noiseLevel.tint,
+                    accessibilityLabel: "Noise: \(noiseLevel.rawValue)"
+                )
+                CompactStatusPill(
+                    title: wifi,
+                    icon: "wifi",
+                    tint: wifi == "Strong Wi‑Fi" ? AppColor.positive : AppColor.negative
+                )
+                CompactStatusPill(
+                    title: outlets,
+                    icon: "powerplug",
+                    tint: outlets == "Outlets free" ? AppColor.positive : AppColor.negative
+                )
+                CompactStatusPill(
+                    title: crowd,
+                    icon: "person.2",
+                    tint: crowd == "Uncrowded" ? AppColor.positive : AppColor.negative
+                )
+            }
+        } else {
+            Label("No check-ins yet", systemImage: "clock")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
         }
     }
 }

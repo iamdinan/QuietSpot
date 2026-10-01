@@ -12,9 +12,7 @@ struct CafeDetailsView: View {
                 Color.clear
                     .frame(height: 240)
                     .overlay {
-                        Image(cafe.imageName)
-                            .resizable()
-                            .scaledToFill()
+                        CafeImage(cafe: cafe)
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                     .accessibilityLabel("Photo of \(cafe.name)")
@@ -50,7 +48,7 @@ struct CafeDetailsView: View {
                     Text("Recent check-ins")
                         .font(.title3.bold())
                         .accessibilityAddTraits(.isHeader)
-                    Text("The three latest community updates")
+                    Text(cafe.recentCheckIns.isEmpty ? "No check-ins yet. Be the first to share the conditions here." : "Up to three recent check-ins · saved on this device for now")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
 
@@ -92,10 +90,10 @@ struct CafeDetailsView: View {
                 didSubmitCheckIn = true
             }
         }
-        .alert("Check-in added", isPresented: $showsConfirmation) {
+        .alert("Check-in saved locally", isPresented: $showsConfirmation) {
             Button("Done", role: .cancel) {}
         } message: {
-            Text("Thanks for sharing the latest conditions at \(cafe.name).")
+            Text("Your check-in at \(cafe.name) is saved for this session. Online check-in sharing is coming next.")
         }
     }
 }

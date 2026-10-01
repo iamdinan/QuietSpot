@@ -2,10 +2,11 @@ import SwiftUI
 
 struct HomeView: View {
     @Binding var cafes: [CafeSnapshot]
+    var onRefresh: (() async -> Void)? = nil
 
     private var favorites: [CafeSnapshot] { cafes.filter(\.isFavorite) }
     private var latestFavorites: [CafeSnapshot] {
-        Array(favorites.sorted { $0.updateOrder < $1.updateOrder }.prefix(3))
+        Array(favorites.sorted(by: CafeSnapshot.latestFirst).prefix(3))
     }
 
     var body: some View {
@@ -15,13 +16,21 @@ struct HomeView: View {
                     LivePulseWidget(cafes: latestFavorites)
 
                     VStack(alignment: .leading, spacing: 14) {
-                        SectionHeader(title: "Your favorite cafés", subtitle: "Your saved places", count: favorites.count)
+                        SectionHeader(title: "Your favorite cafés", subtitle: "Saved for this session", count: favorites.count)
+                        if favorites.isEmpty {
+                            Text("Tap the heart on a café’s details page to save it.")
+                                .font(.subheadline).foregroundStyle(.secondary)
+                        }
                         CafePager(cafes: favorites)
                     }
 
                     VStack(alignment: .leading, spacing: 14) {
                         SectionHeader(title: "All cafés", subtitle: "Latest check-ins across every café", count: cafes.count)
-                        CafePager(cafes: cafes.sorted { $0.updateOrder < $1.updateOrder })
+                        if cafes.isEmpty {
+                            Text("No cafés to display yet.")
+                                .font(.subheadline).foregroundStyle(.secondary)
+                        }
+                        CafePager(cafes: cafes.sorted(by: CafeSnapshot.latestFirst))
                     }
                 }
                 .padding(20)
@@ -29,8 +38,9 @@ struct HomeView: View {
                 .frame(maxWidth: .infinity)
             }
             .background(Color(uiColor: .systemGroupedBackground))
+            .refreshable { await onRefresh?() }
             .navigationTitle("Home")
-            .navigationDestination(for: UUID.self) { cafeID in
+            .navigationDestination(for: String.self) { cafeID in
                 if let index = cafes.firstIndex(where: { $0.id == cafeID }) {
                     CafeDetailsView(cafe: $cafes[index])
                 }

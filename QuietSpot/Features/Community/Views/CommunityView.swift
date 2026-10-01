@@ -16,7 +16,7 @@ struct CommunityView: View {
                 cafes: $cafes,
                 insights: $insights,
                 profile: profile,
-                intro: "Little discoveries from fellow café-goers.",
+                intro: "Insights are saved for this session. Online community sharing is coming later.",
                 notice: favorites.isEmpty ? "Save a café to your favorites to share an insight about it." : nil
             )
             .navigationTitle("Community")

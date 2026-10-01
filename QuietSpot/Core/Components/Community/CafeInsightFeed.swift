@@ -50,7 +50,7 @@ struct CafeInsightFeed: View {
             .padding()
         }
         .background(Color(uiColor: .systemGroupedBackground))
-        .navigationDestination(for: UUID.self) { id in
+        .navigationDestination(for: String.self) { id in
             if let index = cafes.firstIndex(where: { $0.id == id }) {
                 CafeDetailsView(cafe: $cafes[index])
             }

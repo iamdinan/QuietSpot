@@ -13,9 +13,7 @@ struct CafeStatusCard: View {
                 Color.clear
                     .frame(height: 140)
                     .overlay {
-                        Image(cafe.imageName)
-                            .resizable()
-                            .scaledToFill()
+                        CafeImage(cafe: cafe)
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 14))
                     .accessibilityLabel("Photo of \(cafe.name)")
@@ -28,9 +26,11 @@ struct CafeStatusCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(cafe.name).font(.headline)
                     Text(cafe.area).font(.subheadline).foregroundStyle(.secondary)
-                    Text("Updated \(cafe.updatedAt)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    if let updatedAt = cafe.updatedAt {
+                        Text("Updated \(updatedAt)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 Image(systemName: "chevron.right")

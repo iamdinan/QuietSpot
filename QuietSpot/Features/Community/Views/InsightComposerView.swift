@@ -2,9 +2,9 @@ import SwiftUI
 
 struct InsightComposerView: View {
     let favorites: [CafeSnapshot]
-    let onShare: (UUID, String) -> Void
+    let onShare: (String, String) -> Void
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedCafeID: UUID?
+    @State private var selectedCafeID: String?
     @State private var text = ""
     @State private var isConfirmingDiscard = false
 
@@ -16,7 +16,7 @@ struct InsightComposerView: View {
         !trimmedText.isEmpty && favorites.contains { $0.id == selectedCafeID }
     }
 
-    init(favorites: [CafeSnapshot], onShare: @escaping (UUID, String) -> Void) {
+    init(favorites: [CafeSnapshot], onShare: @escaping (String, String) -> Void) {
         self.favorites = favorites
         self.onShare = onShare
         _selectedCafeID = State(initialValue: favorites.first?.id)

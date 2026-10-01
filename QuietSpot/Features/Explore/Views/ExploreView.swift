@@ -62,7 +62,7 @@ struct ExploreView: View {
                     .accessibilityLabel("Filter cafés")
                 }
             }
-            .navigationDestination(for: UUID.self) { cafeID in
+            .navigationDestination(for: String.self) { cafeID in
                 if let index = cafes.firstIndex(where: { $0.id == cafeID }) {
                     CafeDetailsView(cafe: $cafes[index])
                 }

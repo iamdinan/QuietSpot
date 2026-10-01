@@ -10,9 +10,7 @@ struct CafeThumbnail: View {
     let size: CGFloat
 
     var body: some View {
-        Image(cafe.imageName)
-            .resizable()
-            .scaledToFill()
+        CafeImage(cafe: cafe)
             .frame(width: size, height: size)
             .clipShape(RoundedRectangle(cornerRadius: size * 0.22, style: .continuous))
             .accessibilityLabel("Photo of \(cafe.name)")

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		A17E0001306E214600000001 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A17E0003306E214600000001 /* FirebaseCore */; };
 		A17E0002306E214600000001 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A17E0004306E214600000001 /* FirebaseAuth */; };
+		A17E0006306E214600000001 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A17E0007306E214600000001 /* FirebaseFirestore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 			files = (
 				A17E0001306E214600000001 /* FirebaseCore in Frameworks */,
 				A17E0002306E214600000001 /* FirebaseAuth in Frameworks */,
+				A17E0006306E214600000001 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,6 +76,7 @@
 			packageProductDependencies = (
 				A17E0003306E214600000001 /* FirebaseCore */,
 				A17E0004306E214600000001 /* FirebaseAuth */,
+				A17E0007306E214600000001 /* FirebaseFirestore */,
 			);
 			productName = QuietSpot;
 			productReference = E7248079306E2146008FCF77 /* QuietSpot.app */;
@@ -366,6 +369,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A17E0005306E214600000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAuth;
+		};
+		A17E0007306E214600000001 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A17E0005306E214600000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

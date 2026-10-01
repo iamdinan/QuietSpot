@@ -7,7 +7,7 @@ struct CafeMapView: View {
     @StateObject private var location = LocationProvider()
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
-    @State private var path: [UUID] = []
+    @State private var path: [String] = []
     @State private var hasCenteredOnLocation = false
     @State private var isVisible = false
     @State private var camera: MapCameraPosition = .region(
@@ -82,7 +82,7 @@ struct CafeMapView: View {
                     .disabled(location.permissionDenied)
                 }
             }
-            .navigationDestination(for: UUID.self) { cafeID in
+            .navigationDestination(for: String.self) { cafeID in
                 if let index = cafes.firstIndex(where: { $0.id == cafeID }) {
                     CafeDetailsView(cafe: $cafes[index])
                 }

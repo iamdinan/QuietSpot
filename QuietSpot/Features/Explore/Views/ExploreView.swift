@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ExploreView: View {
-    @State private var cafes = CafeSampleData.cafes
+    @Binding var cafes: [CafeSnapshot]
     @State private var searchText = ""
     @State private var activeFilters = Set<PositiveCafeFilter>()
 
@@ -121,5 +121,5 @@ private enum PositiveCafeFilter: CaseIterable, Hashable, Identifiable {
 }
 
 #Preview {
-    ExploreView()
+    ExploreView(cafes: .constant(CafeSampleData.cafes))
 }

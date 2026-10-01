@@ -7,15 +7,16 @@ import SwiftUI
 
 struct MainTabView: View {
     let onSignOut: () -> Void
+    @State private var cafes = CafeSampleData.cafes
 
     var body: some View {
         TabView {
-            HomeView()
+            HomeView(cafes: $cafes)
                 .tabItem {
                     Label("Home", systemImage: "house")
                 }
 
-            ExploreView()
+            ExploreView(cafes: $cafes)
                 .tabItem {
                     Label("Explore", systemImage: "safari")
                 }
@@ -25,7 +26,7 @@ struct MainTabView: View {
                     Label("Community", systemImage: "person.3")
                 }
 
-            MapPreviewView()
+            CafeMapView(cafes: $cafes)
                 .tabItem {
                     Label("Map", systemImage: "map")
                 }

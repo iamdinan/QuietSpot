@@ -41,6 +41,11 @@ struct CafeDetailsView: View {
                     .accessibilityValue(cafe.isFavorite ? "Saved" : "Not saved")
                 }
 
+                Text(cafe.description)
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
                 VStack(alignment: .leading, spacing: 14) {
                     Text("Recent check-ins")
                         .font(.title3.bold())

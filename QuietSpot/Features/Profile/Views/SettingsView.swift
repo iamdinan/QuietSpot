@@ -24,14 +24,6 @@ struct SettingsView: View {
             }
 
             Section {
-                MapRadiusControl()
-            } header: {
-                Text("Map")
-            } footer: {
-                Text("Set your nearby café radius. You can also adjust this directly in Map.")
-            }
-
-            Section {
                 LabeledContent(biometricName, value: biometricStatus)
             } header: {
                 Text("Security")

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct HomeView: View {
-    @State private var cafes = CafeSampleData.cafes
+    @Binding var cafes: [CafeSnapshot]
 
     private var favorites: [CafeSnapshot] { cafes.filter(\.isFavorite) }
     private var latestFavorites: [CafeSnapshot] {
@@ -93,4 +93,4 @@ private struct SectionHeader: View {
     }
 }
 
-#Preview { HomeView() }
+#Preview { HomeView(cafes: .constant(CafeSampleData.cafes)) }

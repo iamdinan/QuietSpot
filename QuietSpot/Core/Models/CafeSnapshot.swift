@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import CoreLocation
 
 enum NoiseLevel: String, CaseIterable {
     case quiet = "Quiet"
@@ -15,7 +16,10 @@ struct CafeSnapshot: Identifiable {
     let id = UUID()
     let name: String
     let area: String
+    let description: String
     let imageName: String
+    let latitude: Double
+    let longitude: Double
     var isFavorite: Bool
     var updateOrder: Double
     var noiseLevel: NoiseLevel
@@ -24,6 +28,10 @@ struct CafeSnapshot: Identifiable {
     var crowd: String
     var updatedAt: String
     var checkInHistory: [CafeCheckIn]? = nil
+
+    var coordinate: CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+    }
 
     // Sample history until check-ins are supplied by Firebase.
     var recentCheckIns: [CafeCheckIn] {

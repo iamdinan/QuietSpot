@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ExploreView: View {
-    @State private var cafes = HomeSampleData.cafes
+    @State private var cafes = CafeSampleData.cafes
     @State private var searchText = ""
     @State private var activeFilters = Set<PositiveCafeFilter>()
 

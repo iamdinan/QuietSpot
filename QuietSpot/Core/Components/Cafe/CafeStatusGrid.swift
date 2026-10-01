@@ -84,12 +84,12 @@ private extension NoiseLevel {
 }
 
 #Preview("Light") {
-    CafeStatusGrid(cafe: HomeSampleData.cafes[0])
+    CafeStatusGrid(cafe: CafeSampleData.cafes[0])
         .padding()
 }
 
 #Preview("Dark") {
-    CafeStatusGrid(cafe: HomeSampleData.cafes[2])
+    CafeStatusGrid(cafe: CafeSampleData.cafes[2])
         .padding()
         .preferredColorScheme(.dark)
 }

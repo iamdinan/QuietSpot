@@ -6,6 +6,8 @@
 import SwiftUI
 
 struct MainTabView: View {
+    let onSignOut: () -> Void
+
     var body: some View {
         TabView {
             HomeView()
@@ -23,12 +25,12 @@ struct MainTabView: View {
                     Label("Community", systemImage: "person.3")
                 }
 
-            TabPlaceholderView(title: "Map", icon: "map")
+            MapPreviewView()
                 .tabItem {
                     Label("Map", systemImage: "map")
                 }
 
-            TabPlaceholderView(title: "Profile", icon: "person")
+            ProfileView(onSignOut: onSignOut)
                 .tabItem {
                     Label("Profile", systemImage: "person")
                 }
@@ -49,5 +51,5 @@ private struct TabPlaceholderView: View {
 }
 
 #Preview {
-    MainTabView()
+    MainTabView(onSignOut: {})
 }

@@ -97,6 +97,6 @@ struct CafeDetailsView: View {
 
 #Preview {
     NavigationStack {
-        CafeDetailsView(cafe: .constant(HomeSampleData.cafes[0]))
+        CafeDetailsView(cafe: .constant(CafeSampleData.cafes[0]))
     }
 }

@@ -19,7 +19,7 @@ struct ContentView: View {
     var body: some View {
         Group {
             if isAuthenticated {
-                MainTabView()
+                MainTabView(onSignOut: { isAuthenticated = false })
             } else {
                 NavigationStack(path: $navigationPath) {
                     WelcomeView(

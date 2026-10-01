@@ -1,30 +1,47 @@
 import SwiftUI
 
 struct ProfileView: View {
+    @Binding var cafes: [CafeSnapshot]
+    @Binding var insights: [CafeInsight]
+    @Binding var profile: UserProfile
     let onSignOut: () -> Void
     @State private var showsSignOutConfirmation = false
+    @State private var showsEditProfile = false
 
     var body: some View {
         NavigationStack {
             List {
                 Section {
-                    NavigationLink {
-                        ProfilePreviewView()
-                    } label: {
-                        HStack(spacing: 14) {
-                            Image(systemName: "person.crop.circle.fill")
-                                .font(.system(size: 50))
-                                .foregroundStyle(AppColor.accent)
+                    VStack(alignment: .leading, spacing: 12) {
+                        ProfileAvatar(photoData: profile.photoData, size: 72)
 
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text("Your profile")
-                                    .font(.headline)
-                                Text("View your account details")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                            }
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(profile.displayName)
+                                .font(.title2.bold())
+                            Text("Your café discoveries, in one place.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
                         }
-                        .padding(.vertical, 4)
+                        Button("Edit profile") {
+                            showsEditProfile = true
+                        }
+                        .buttonStyle(.borderless)
+                        .frame(minHeight: 44)
+                    }
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                Section("Community") {
+                    NavigationLink {
+                        MyInsightsView(cafes: $cafes, insights: $insights, profile: profile)
+                    } label: {
+                        HStack {
+                            Label("My insights", systemImage: "text.bubble")
+                            Spacer()
+                            Text(insights.filter(\.isCurrentUser).count, format: .number)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
 
@@ -45,6 +62,9 @@ struct ProfileView: View {
                 }
             }
             .navigationTitle("Profile")
+            .sheet(isPresented: $showsEditProfile) {
+                EditProfileView(profile: $profile)
+            }
             .confirmationDialog("Sign out of QuietSpot?", isPresented: $showsSignOutConfirmation, titleVisibility: .visible) {
                 Button("Sign out", role: .destructive, action: onSignOut)
             } message: {
@@ -54,30 +74,6 @@ struct ProfileView: View {
     }
 }
 
-private struct ProfilePreviewView: View {
-    var body: some View {
-        List {
-            Section {
-                HStack(spacing: 16) {
-                    Image(systemName: "person.crop.circle.fill")
-                        .font(.system(size: 68))
-                        .foregroundStyle(AppColor.accent)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Your profile")
-                            .font(.title3.bold())
-                        Text("Account details will appear here.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .padding(.vertical, 8)
-            }
-        }
-        .navigationTitle("Profile preview")
-        .navigationBarTitleDisplayMode(.inline)
-    }
-}
-
 #Preview {
-    ProfileView(onSignOut: {})
+    ProfileView(cafes: .constant(CafeSampleData.cafes), insights: .constant(CommunitySampleData.insights), profile: .constant(UserProfile()), onSignOut: {})
 }

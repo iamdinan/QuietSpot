@@ -9,6 +9,7 @@ struct MainTabView: View {
     let onSignOut: () -> Void
     @State private var cafes = CafeSampleData.cafes
     @State private var insights = CommunitySampleData.insights
+    @State private var profile = UserProfile()
 
     var body: some View {
         TabView {
@@ -22,7 +23,7 @@ struct MainTabView: View {
                     Label("Explore", systemImage: "safari")
                 }
 
-            CommunityView(cafes: $cafes, insights: $insights)
+            CommunityView(cafes: $cafes, insights: $insights, profile: profile)
                 .tabItem {
                     Label("Community", systemImage: "person.3")
                 }
@@ -32,7 +33,7 @@ struct MainTabView: View {
                     Label("Map", systemImage: "map")
                 }
 
-            ProfileView(onSignOut: onSignOut)
+            ProfileView(cafes: $cafes, insights: $insights, profile: $profile, onSignOut: onSignOut)
                 .tabItem {
                     Label("Profile", systemImage: "person")
                 }

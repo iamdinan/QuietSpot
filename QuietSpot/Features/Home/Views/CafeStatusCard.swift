@@ -1,14 +1,14 @@
 import SwiftUI
 
 struct CafeStatusCard: View {
-    enum Style { case widget, favorite, standard }
+    enum Style { case widget, photo }
 
     let cafe: CafeSnapshot
-    var style: Style = .standard
+    var style: Style = .photo
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            if style == .favorite {
+            if style == .photo {
                 // A bounded container gives every source image the same crop.
                 Color.clear
                     .frame(height: 140)
@@ -22,8 +22,8 @@ struct CafeStatusCard: View {
             }
 
             HStack(alignment: .center, spacing: 12) {
-                if style != .favorite {
-                    CafeThumbnail(cafe: cafe, size: style == .widget ? 48 : 64)
+                if style == .widget {
+                    CafeThumbnail(cafe: cafe, size: 48)
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     Text(cafe.name).font(.headline)
@@ -33,6 +33,10 @@ struct CafeStatusCard: View {
                         .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
             }
 
             CafeStatusGrid(cafe: cafe)
@@ -46,5 +50,6 @@ struct CafeStatusCard: View {
             }
         }
         .accessibilityElement(children: .combine)
+        .accessibilityHint("Opens café details")
     }
 }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct HomeView: View {
-    private let cafes = HomeSampleData.cafes
+    @State private var cafes = HomeSampleData.cafes
 
     private var favorites: [CafeSnapshot] { cafes.filter(\.isFavorite) }
     private var latestFavorites: [CafeSnapshot] {
@@ -30,6 +30,11 @@ struct HomeView: View {
             }
             .background(Color(uiColor: .systemGroupedBackground))
             .navigationTitle("Home")
+            .navigationDestination(for: UUID.self) { cafeID in
+                if let index = cafes.firstIndex(where: { $0.id == cafeID }) {
+                    CafeDetailsView(cafe: $cafes[index])
+                }
+            }
         }
     }
 }
@@ -43,14 +48,18 @@ private struct LivePulseWidget: View {
                 Label("Favorite café pulse", systemImage: "waveform.path")
                     .font(.title3.bold())
                     .foregroundStyle(AppColor.accent)
-                Text("Your 3 most recently updated favorites")
+                Text(cafes.isEmpty ? "Save a café using the heart on its details page" : "Latest updates from \(cafes.count) of your favorites")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
+            .accessibilityAddTraits(.isHeader)
 
             ForEach(Array(cafes.enumerated()), id: \.element.id) { index, cafe in
                 if index > 0 { Divider() }
-                CafeStatusCard(cafe: cafe, style: .widget)
+                NavigationLink(value: cafe.id) {
+                    CafeStatusCard(cafe: cafe, style: .widget)
+                }
+                .buttonStyle(.plain)
             }
         }
         .padding(18)

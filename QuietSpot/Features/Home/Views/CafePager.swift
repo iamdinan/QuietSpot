@@ -16,7 +16,10 @@ struct CafePager: View {
     var body: some View {
         VStack(spacing: 12) {
             ForEach(visibleCafes) { cafe in
-                CafeStatusCard(cafe: cafe, style: .favorite)
+                NavigationLink(value: cafe.id) {
+                    CafeStatusCard(cafe: cafe)
+                }
+                .buttonStyle(.plain)
             }
 
             if pageCount > 1 {
@@ -45,6 +48,9 @@ struct CafePager: View {
                 }
                 .tint(AppColor.accent)
             }
+        }
+        .onChange(of: cafes.count) {
+            selectedPage = min(selectedPage, pageCount - 1)
         }
     }
 }

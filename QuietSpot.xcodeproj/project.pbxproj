@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A17E0001306E214600000001 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A17E0003306E214600000001 /* FirebaseCore */; };
+		A17E0002306E214600000001 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A17E0004306E214600000001 /* FirebaseAuth */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		E7248079306E2146008FCF77 /* QuietSpot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuietSpot.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +28,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A17E0001306E214600000001 /* FirebaseCore in Frameworks */,
+				A17E0002306E214600000001 /* FirebaseAuth in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +72,8 @@
 			);
 			name = QuietSpot;
 			packageProductDependencies = (
+				A17E0003306E214600000001 /* FirebaseCore */,
+				A17E0004306E214600000001 /* FirebaseAuth */,
 			);
 			productName = QuietSpot;
 			productReference = E7248079306E2146008FCF77 /* QuietSpot.app */;
@@ -94,6 +103,9 @@
 			);
 			mainGroup = E7248070306E2146008FCF77;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A17E0005306E214600000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E724807A306E2146008FCF77 /* Products */;
 			projectDirPath = "";
@@ -253,6 +265,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_FirebaseAppDelegateProxyEnabled = NO;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "QuietSpot uses your location to show nearby cafés within your selected radius.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -285,6 +298,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_FirebaseAppDelegateProxyEnabled = NO;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "QuietSpot uses your location to show nearby cafés within your selected radius.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -330,6 +344,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A17E0005306E214600000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A17E0003306E214600000001 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A17E0005306E214600000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		A17E0004306E214600000001 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A17E0005306E214600000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E7248071306E2146008FCF77 /* Project object */;
 }

@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct CreateAccountView: View {
-    let onCreateAccount: () -> Void
+    @Environment(AuthenticationViewModel.self) private var authentication
 
     @State private var displayName = ""
     @State private var email = ""
@@ -43,8 +43,13 @@ struct CreateAccountView: View {
                 }
                 .padding(.top, 36)
 
-                PrimaryButton("Create account", action: onCreateAccount)
+                PrimaryButton("Create account") {
+                    Task { await authentication.createAccount(displayName: displayName, email: email, password: password) }
+                }
+                    .disabled(!authentication.canAuthenticate || displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || password.isEmpty)
                     .padding(.top, 32)
+
+                AuthenticationFeedback(progressMessage: "Creating your account…")
 
                 Text("You can update your profile and notification preferences at any time.")
                     .font(.footnote)
@@ -57,12 +62,15 @@ struct CreateAccountView: View {
             .padding(.bottom, 32)
         }
         .scrollDismissesKeyboard(.interactively)
+        .disabled(authentication.isBusy)
+        .navigationBarBackButtonHidden(authentication.isBusy)
         .navigationBarTitleDisplayMode(.inline)
     }
 }
 
 #Preview {
     NavigationStack {
-        CreateAccountView(onCreateAccount: {})
+        CreateAccountView()
     }
+    .environment(AuthenticationViewModel())
 }

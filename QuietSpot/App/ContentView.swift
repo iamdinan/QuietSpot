@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var navigationPath = NavigationPath()
-    @State private var isAuthenticated = false
+    @State private var authentication = AuthenticationViewModel()
     @AppStorage("appearanceMode") private var appearanceMode = AppAppearance.system.rawValue
 
     private var selectedAppearance: AppAppearance {
@@ -17,9 +17,15 @@ struct ContentView: View {
     }
 
     var body: some View {
+        @Bindable var authentication = authentication
         Group {
-            if isAuthenticated {
-                MainTabView(onSignOut: { isAuthenticated = false })
+            if authentication.isRestoringSession {
+                ProgressView("Restoring your session…")
+            } else if authentication.isCreatingAccount {
+                ProgressView("Creating your account…")
+            } else if let userID = authentication.userID {
+                MainTabView(onSignOut: authentication.signOut, profile: $authentication.profile)
+                    .id(userID)
             } else {
                 NavigationStack(path: $navigationPath) {
                     WelcomeView(
@@ -34,7 +40,6 @@ struct ContentView: View {
                         switch route {
                         case .signIn:
                             SignInView(
-                                onSignIn: { isAuthenticated = true },
                                 onForgotPassword: {
                                     navigationPath.append(AppRoute.forgotPassword)
                                 },
@@ -45,11 +50,24 @@ struct ContentView: View {
                         case .forgotPassword:
                             ForgotPasswordView()
                         case .createAccount:
-                            CreateAccountView(onCreateAccount: { isAuthenticated = true })
+                            CreateAccountView()
                         }
                     }
                 }
             }
+        }
+        .environment(authentication)
+        .task { authentication.start() }
+        .onChange(of: authentication.userID) { _, _ in
+            navigationPath = NavigationPath()
+        }
+        .alert("Account notice", isPresented: Binding(
+            get: { authentication.errorMessage != nil },
+            set: { if !$0 { authentication.errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) { authentication.errorMessage = nil }
+        } message: {
+            Text(authentication.errorMessage ?? "")
         }
         .preferredColorScheme(selectedAppearance.colorScheme)
     }

@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct SignInView: View {
-    let onSignIn: () -> Void
+    @Environment(AuthenticationViewModel.self) private var authentication
     let onForgotPassword: () -> Void
     let onRegister: () -> Void
 
@@ -46,8 +46,13 @@ struct SignInView: View {
                 }
                 .padding(.top, 12)
 
-                PrimaryButton("Sign in", action: onSignIn)
+                PrimaryButton("Sign in") {
+                    Task { await authentication.signIn(email: email, password: password) }
+                }
+                    .disabled(!authentication.canAuthenticate || email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || password.isEmpty)
                     .padding(.top, 32)
+
+                AuthenticationFeedback(progressMessage: "Signing in…")
 
                 Spacer(minLength: 36)
 
@@ -63,12 +68,15 @@ struct SignInView: View {
             .padding(.bottom, 32)
         }
         .scrollDismissesKeyboard(.interactively)
+        .disabled(authentication.isBusy)
+        .navigationBarBackButtonHidden(authentication.isBusy)
         .navigationBarTitleDisplayMode(.inline)
     }
 }
 
 #Preview {
     NavigationStack {
-        SignInView(onSignIn: {}, onForgotPassword: {}, onRegister: {})
+        SignInView(onForgotPassword: {}, onRegister: {})
     }
+    .environment(AuthenticationViewModel())
 }

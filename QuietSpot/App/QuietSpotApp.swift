@@ -9,6 +9,8 @@ import SwiftUI
 
 @main
 struct QuietSpotApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
     var body: some Scene {
         WindowGroup {
             ContentView()

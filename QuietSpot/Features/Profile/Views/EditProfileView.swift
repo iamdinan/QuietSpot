@@ -4,6 +4,7 @@ import ImageIO
 
 struct EditProfileView: View {
     @Binding var profile: UserProfile
+    @Environment(AuthenticationViewModel.self) private var authentication
     @Environment(\.dismiss) private var dismiss
     @State private var displayName: String
     @State private var photoData: Data?
@@ -81,15 +82,20 @@ struct EditProfileView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        guard !trimmedName.isEmpty, !isLoadingPhoto else { return }
-                        profile.displayName = trimmedName
-                        profile.photoData = photoData
-                        dismiss()
+                        guard !trimmedName.isEmpty, !isLoadingPhoto, !authentication.isBusy else { return }
+                        Task {
+                            if trimmedName != profile.displayName {
+                                guard await authentication.updateDisplayName(trimmedName) else { return }
+                            }
+                            profile.photoData = photoData
+                            dismiss()
+                        }
                     }
-                    .disabled(trimmedName.isEmpty || isLoadingPhoto || !hasChanges)
+                    .disabled(trimmedName.isEmpty || isLoadingPhoto || authentication.isBusy || !hasChanges)
                 }
             }
-            .interactiveDismissDisabled(hasChanges || isLoadingPhoto)
+            .disabled(authentication.isBusy)
+            .interactiveDismissDisabled(hasChanges || isLoadingPhoto || authentication.isBusy)
             .confirmationDialog("Discard profile changes?", isPresented: $showsDiscardConfirmation, titleVisibility: .visible) {
                 Button("Discard changes", role: .destructive) { dismiss() }
                 Button("Keep editing", role: .cancel) {}

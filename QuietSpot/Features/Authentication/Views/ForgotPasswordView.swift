@@ -6,7 +6,9 @@
 import SwiftUI
 
 struct ForgotPasswordView: View {
+    @Environment(AuthenticationViewModel.self) private var authentication
     @State private var email = ""
+    @State private var showsResetConfirmation = false
 
     var body: some View {
         ScrollView {
@@ -29,8 +31,15 @@ struct ForgotPasswordView: View {
                     .inputFieldStyle()
                     .padding(.top, 36)
 
-                PrimaryButton("Send reset link", action: {})
+                PrimaryButton("Send reset link") {
+                    Task {
+                        showsResetConfirmation = await authentication.sendPasswordReset(email: email)
+                    }
+                }
+                    .disabled(!authentication.canAuthenticate || email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     .padding(.top, 24)
+
+                AuthenticationFeedback(progressMessage: "Requesting reset link…")
 
                 Label("We’ll send a password-reset link to this address.", systemImage: "info.circle")
                     .font(.footnote)
@@ -41,6 +50,13 @@ struct ForgotPasswordView: View {
             .padding(.bottom, 32)
         }
         .scrollDismissesKeyboard(.interactively)
+        .disabled(authentication.isBusy)
+        .navigationBarBackButtonHidden(authentication.isBusy)
+        .alert("Check your email", isPresented: $showsResetConfirmation) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("If an account exists for that email, you’ll receive a password-reset link. Check your spam folder too.")
+        }
         .navigationBarTitleDisplayMode(.inline)
     }
 }
@@ -49,4 +65,5 @@ struct ForgotPasswordView: View {
     NavigationStack {
         ForgotPasswordView()
     }
+    .environment(AuthenticationViewModel())
 }

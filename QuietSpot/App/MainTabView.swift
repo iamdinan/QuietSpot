@@ -9,7 +9,7 @@ struct MainTabView: View {
     let onSignOut: () -> Void
     @State private var cafes = CafeSampleData.cafes
     @State private var insights = CommunitySampleData.insights
-    @State private var profile = UserProfile()
+    @Binding var profile: UserProfile
 
     var body: some View {
         TabView {
@@ -43,5 +43,6 @@ struct MainTabView: View {
 }
 
 #Preview {
-    MainTabView(onSignOut: {})
+    MainTabView(onSignOut: {}, profile: .constant(UserProfile()))
+        .environment(AuthenticationViewModel())
 }

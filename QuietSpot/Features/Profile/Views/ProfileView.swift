@@ -12,16 +12,17 @@ struct ProfileView: View {
         NavigationStack {
             List {
                 Section {
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(spacing: 12) {
                         ProfileAvatar(photoData: profile.photoData, size: 72)
 
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(spacing: 4) {
                             Text(profile.displayName)
                                 .font(.title2.bold())
                             Text("Your café discoveries, in one place.")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
+                        .multilineTextAlignment(.center)
                         Button("Edit profile") {
                             showsEditProfile = true
                         }
@@ -29,7 +30,7 @@ struct ProfileView: View {
                         .frame(minHeight: 44)
                     }
                     .padding(.vertical, 8)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: .infinity, alignment: .center)
                 }
 
                 Section("Community") {
@@ -39,7 +40,7 @@ struct ProfileView: View {
                         HStack {
                             Label("My insights", systemImage: "text.bubble")
                             Spacer()
-                            Text(insights.filter(\.isCurrentUser).count, format: .number)
+                            Text(insights.filter { $0.authorID == profile.id }.count, format: .number)
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -76,4 +77,5 @@ struct ProfileView: View {
 
 #Preview {
     ProfileView(cafes: .constant(CafeSampleData.cafes), insights: .constant(CommunitySampleData.insights), profile: .constant(UserProfile()), onSignOut: {})
+        .environment(AuthenticationViewModel())
 }

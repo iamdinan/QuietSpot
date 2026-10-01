@@ -11,7 +11,7 @@ struct CafeInsightFeed: View {
     private var visibleInsights: [CafeInsight] {
         insights
             .filter { insight in
-                (!onlyCurrentUser || insight.isCurrentUser) && cafes.contains { $0.id == insight.cafeID }
+                (!onlyCurrentUser || insight.authorID == profile.id) && cafes.contains { $0.id == insight.cafeID }
             }
             .sorted { $0.createdAt > $1.createdAt }
     }

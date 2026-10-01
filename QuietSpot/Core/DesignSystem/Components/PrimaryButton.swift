@@ -22,6 +22,7 @@ struct PrimaryButton: View {
         .buttonStyle(.borderedProminent)
         .controlSize(.large)
         .tint(AppColor.accent)
+        .foregroundStyle(Color(uiColor: .systemBackground))
         .accessibilityHint("Opens sign in")
     }
 }

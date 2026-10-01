@@ -6,6 +6,7 @@
 import SwiftUI
 
 struct SignInView: View {
+    let onSignIn: () -> Void
     let onForgotPassword: () -> Void
     let onRegister: () -> Void
 
@@ -31,13 +32,11 @@ struct SignInView: View {
                         .keyboardType(.emailAddress)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                        .padding(14)
-                        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .inputFieldStyle()
 
                     SecureField("Password", text: $password)
                         .textContentType(.password)
-                        .padding(14)
-                        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .inputFieldStyle()
                 }
                 .padding(.top, 36)
 
@@ -47,7 +46,7 @@ struct SignInView: View {
                 }
                 .padding(.top, 12)
 
-                PrimaryButton("Sign in", action: {})
+                PrimaryButton("Sign in", action: onSignIn)
                     .padding(.top, 32)
 
                 Spacer(minLength: 36)
@@ -70,6 +69,6 @@ struct SignInView: View {
 
 #Preview {
     NavigationStack {
-        SignInView(onForgotPassword: {}, onRegister: {})
+        SignInView(onSignIn: {}, onForgotPassword: {}, onRegister: {})
     }
 }

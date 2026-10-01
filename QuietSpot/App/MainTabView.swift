@@ -8,6 +8,7 @@ import SwiftUI
 struct MainTabView: View {
     let onSignOut: () -> Void
     @State private var cafes = CafeSampleData.cafes
+    @State private var insights = CommunitySampleData.insights
 
     var body: some View {
         TabView {
@@ -21,7 +22,7 @@ struct MainTabView: View {
                     Label("Explore", systemImage: "safari")
                 }
 
-            TabPlaceholderView(title: "Community", icon: "person.3")
+            CommunityView(cafes: $cafes, insights: $insights)
                 .tabItem {
                     Label("Community", systemImage: "person.3")
                 }
@@ -37,17 +38,6 @@ struct MainTabView: View {
                 }
         }
         .tint(AppColor.accent)
-    }
-}
-
-private struct TabPlaceholderView: View {
-    let title: String
-    let icon: String
-
-    var body: some View {
-        NavigationStack {
-            ContentUnavailableView(title, systemImage: icon, description: Text("Coming next."))
-        }
     }
 }
 

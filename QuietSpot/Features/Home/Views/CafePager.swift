@@ -3,7 +3,12 @@ import SwiftUI
 struct CafePager: View {
     let cafes: [CafeSnapshot]
     @State private var selectedPage = 0
-    private let pageSize = 3
+    private let pageSize: Int
+
+    init(cafes: [CafeSnapshot], pageSize: Int = 3) {
+        self.cafes = cafes
+        self.pageSize = pageSize
+    }
 
     private var pageCount: Int {
         max(1, (cafes.count + pageSize - 1) / pageSize)
@@ -49,7 +54,7 @@ struct CafePager: View {
                 .tint(AppColor.accent)
             }
         }
-        .onChange(of: cafes.count) {
+        .onChange(of: cafes.map(\.id)) {
             selectedPage = min(selectedPage, pageCount - 1)
         }
     }

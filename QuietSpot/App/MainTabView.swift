@@ -13,7 +13,7 @@ struct MainTabView: View {
                     Label("Home", systemImage: "house")
                 }
 
-            TabPlaceholderView(title: "Explore", icon: "safari")
+            ExploreView()
                 .tabItem {
                     Label("Explore", systemImage: "safari")
                 }

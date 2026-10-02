@@ -6,12 +6,16 @@ struct CafeStatusGrid: View {
     private let wifi: String?
     private let outlets: String?
     private let crowd: String?
+    private let isLoading: Bool
+    private let statusError: String?
 
     init(cafe: CafeSnapshot) {
         noiseLevel = cafe.noiseLevel
         wifi = cafe.wifi
         outlets = cafe.outlets
         crowd = cafe.crowd
+        isLoading = cafe.isLoadingStatus
+        statusError = cafe.statusErrorMessage
     }
 
     init(checkIn: CafeCheckIn) {
@@ -19,10 +23,20 @@ struct CafeStatusGrid: View {
         wifi = checkIn.wifi
         outlets = checkIn.outlets
         crowd = checkIn.crowd
+        isLoading = false
+        statusError = nil
     }
 
     var body: some View {
-        if let noiseLevel, let wifi, let outlets, let crowd {
+        if let statusError {
+            Label("Status unavailable", systemImage: "exclamationmark.triangle")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .accessibilityHint(statusError)
+        } else if isLoading {
+            ProgressView("Loading café status…")
+                .font(.subheadline)
+        } else if let noiseLevel, let wifi, let outlets, let crowd {
             LazyVGrid(
                 columns: dynamicTypeSize.isAccessibilitySize
                     ? [GridItem(.flexible(), alignment: .leading)]
@@ -93,12 +107,18 @@ private extension NoiseLevel {
 }
 
 #Preview("Light") {
-    CafeStatusGrid(cafe: CafeSampleData.cafes[0])
+    CafeStatusGrid(checkIn: CafeCheckIn(
+        time: "Just now", noiseLevel: .quiet,
+        wifi: "Strong Wi‑Fi", outlets: "Outlets free", crowd: "Uncrowded"
+    ))
         .padding()
 }
 
 #Preview("Dark") {
-    CafeStatusGrid(cafe: CafeSampleData.cafes[2])
+    CafeStatusGrid(checkIn: CafeCheckIn(
+        time: "Just now", noiseLevel: .loud,
+        wifi: "Spotty Wi‑Fi", outlets: "Outlets full", crowd: "Crowded"
+    ))
         .padding()
         .preferredColorScheme(.dark)
 }

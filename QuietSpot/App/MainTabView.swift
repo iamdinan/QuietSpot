@@ -68,4 +68,5 @@ struct MainTabView: View {
 #Preview {
     MainTabView(onSignOut: {}, profile: .constant(UserProfile()))
         .environment(AuthenticationViewModel())
+        .environment(\.loadsCafeImages, false)
 }

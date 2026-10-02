@@ -77,6 +77,6 @@ struct ProfileView: View {
 }
 
 #Preview {
-    ProfileView(cafes: .constant(CafeSampleData.cafes), insights: .constant(CommunitySampleData.insights), profile: .constant(UserProfile()), onSignOut: {})
+    ProfileView(cafes: .constant([]), insights: .constant([]), profile: .constant(UserProfile()), onSignOut: {})
         .environment(AuthenticationViewModel())
 }

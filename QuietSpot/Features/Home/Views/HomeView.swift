@@ -107,4 +107,6 @@ private struct SectionHeader: View {
     }
 }
 
-#Preview { HomeView(cafes: .constant(CafeSampleData.cafes)) }
+#Preview {
+    HomeView(cafes: .constant([]))
+}

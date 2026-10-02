@@ -6,7 +6,7 @@
 import Foundation
 import CoreLocation
 
-enum NoiseLevel: String, CaseIterable {
+enum NoiseLevel: String, CaseIterable, Codable {
     case quiet = "Quiet"
     case moderate = "Moderate"
     case loud = "Loud"
@@ -17,7 +17,6 @@ struct CafeSnapshot: Identifiable {
     let name: String
     let area: String
     let description: String
-    var imageName: String = ""
     let latitude: Double
     let longitude: Double
     var isFavorite: Bool = false
@@ -28,15 +27,15 @@ struct CafeSnapshot: Identifiable {
     var crowd: String? = nil
     var updatedAt: String? = nil
     var checkInHistory: [CafeCheckIn]? = nil
+    var isLoadingStatus = false
+    var statusErrorMessage: String? = nil
 
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 
     var recentCheckIns: [CafeCheckIn] {
-        if let checkInHistory { return checkInHistory }
-        guard let updatedAt, let noiseLevel, let wifi, let outlets, let crowd else { return [] }
-        return [CafeCheckIn(time: updatedAt, noiseLevel: noiseLevel, wifi: wifi, outlets: outlets, crowd: crowd)]
+        checkInHistory ?? []
     }
 
     nonisolated static func latestFirst(_ lhs: Self, _ rhs: Self) -> Bool {
@@ -44,13 +43,16 @@ struct CafeSnapshot: Identifiable {
         return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
     }
 
-    mutating func record(_ checkIn: CafeCheckIn) {
-        checkInHistory = Array(([checkIn] + recentCheckIns).prefix(3))
-        noiseLevel = checkIn.noiseLevel
-        wifi = checkIn.wifi
-        outlets = checkIn.outlets
-        crowd = checkIn.crowd
-        updatedAt = checkIn.time
-        updateOrder = -Date.now.timeIntervalSince1970
+    mutating func updateCheckIns(_ checkIns: [CafeCheckIn]) {
+        checkInHistory = Array(checkIns.prefix(3))
+        let latest = checkInHistory?.first
+        noiseLevel = latest?.noiseLevel
+        wifi = latest?.wifi
+        outlets = latest?.outlets
+        crowd = latest?.crowd
+        updatedAt = latest?.time
+        updateOrder = latest?.createdAt.map { -$0.timeIntervalSince1970 } ?? .infinity
+        isLoadingStatus = false
+        statusErrorMessage = nil
     }
 }

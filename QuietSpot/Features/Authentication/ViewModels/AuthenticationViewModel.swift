@@ -1,4 +1,3 @@
-import FirebaseAuth
 import LocalAuthentication
 import Foundation
 import Observation
@@ -18,13 +17,9 @@ final class AuthenticationViewModel {
     var errorMessage: String?
     var profile = UserProfile()
 
-    @ObservationIgnored private var listener: AuthStateDidChangeListenerHandle?
+    @ObservationIgnored private let service = AuthenticationService()
     @ObservationIgnored private var hasStarted = false
     @ObservationIgnored private let faceID = FaceIDService()
-
-    deinit {
-        if let listener { Auth.auth().removeStateDidChangeListener(listener) }
-    }
 
     var canAuthenticate: Bool {
         hasStarted && configurationError == nil && !isRestoringSession && !isBusy
@@ -33,25 +28,19 @@ final class AuthenticationViewModel {
     func start() {
         guard !hasStarted else { return }
         hasStarted = true
-        configurationError = FirebaseConfiguration.configure()
-        guard configurationError == nil else {
-            isRestoringSession = false
-            return
+        configurationError = service.start { [weak self] session in
+            guard let self else { return }
+            self.updateSession(session)
+            self.isRestoringSession = false
         }
-        listener = Auth.auth().addStateDidChangeListener { [weak self] _, _ in
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                self.updateSession(Auth.auth().currentUser)
-                self.isRestoringSession = false
-            }
-        }
+        if configurationError != nil { isRestoringSession = false }
     }
 
     func signIn(email: String, password: String) async {
         _ = await perform {
-            let result = try await Auth.auth().signIn(withEmail: email.trimmingCharacters(in: .whitespacesAndNewlines), password: password)
-            faceID.remember(email: result.user.email ?? email, password: password)
-            updateSession(result.user)
+            let session = try await service.signIn(email: email, password: password)
+            faceID.remember(email: session.email ?? email, password: password)
+            updateSession(session)
         }
     }
 
@@ -81,11 +70,8 @@ final class AuthenticationViewModel {
     func signInWithFaceID(email: String) async {
         _ = await perform {
             guard let password = try await faceID.authenticate(email: email) else { return }
-            let result = try await Auth.auth().signIn(
-                withEmail: email.trimmingCharacters(in: .whitespacesAndNewlines),
-                password: password
-            )
-            updateSession(result.user)
+            let session = try await service.signIn(email: email, password: password)
+            updateSession(session)
         }
     }
 
@@ -94,28 +80,18 @@ final class AuthenticationViewModel {
         isCreatingAccount = true
         defer { isCreatingAccount = false }
         _ = await perform {
-            let result = try await Auth.auth().createUser(withEmail: email.trimmingCharacters(in: .whitespacesAndNewlines), password: password)
-            faceID.remember(email: result.user.email ?? email, password: password)
-            let request = result.user.createProfileChangeRequest()
-            request.displayName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
-            do {
-                try await request.commitChanges()
-            } catch {
-                // Account creation succeeded even if the separate profile update failed.
+            let result = try await service.createAccount(displayName: displayName, email: email, password: password)
+            faceID.remember(email: result.session.email ?? email, password: password)
+            if !result.profileSaved {
                 errorMessage = "Your account was created, but your display name couldn’t be saved. You can try again in Edit profile."
             }
-            updateSession(result.user)
+            updateSession(result.session)
         }
     }
 
     func sendPasswordReset(email: String) async -> Bool {
         await perform {
-            do {
-                try await Auth.auth().sendPasswordReset(withEmail: email.trimmingCharacters(in: .whitespacesAndNewlines))
-            } catch {
-                // Do not disclose whether an address belongs to an account.
-                if AuthErrorCode(rawValue: (error as NSError).code) != .userNotFound { throw error }
-            }
+            try await service.sendPasswordReset(email: email)
         }
     }
 
@@ -125,11 +101,8 @@ final class AuthenticationViewModel {
             return false
         }
         return await perform {
-            guard let user = Auth.auth().currentUser else { throw ProfileUpdateError.signedOut }
-            let request = user.createProfileChangeRequest()
-            request.displayName = name
-            try await request.commitChanges()
-            updateSession(user)
+            let session = try await service.updateDisplayName(name)
+            updateSession(session)
         }
     }
 
@@ -137,20 +110,20 @@ final class AuthenticationViewModel {
         guard configurationError == nil, !isBusy else { return }
         errorMessage = nil
         do {
-            try Auth.auth().signOut()
+            try service.signOut()
             updateSession(nil)
         } catch {
             errorMessage = "Sign out couldn’t be completed. Please try again."
         }
     }
 
-    private func updateSession(_ user: FirebaseAuth.User?) {
-        userID = user?.uid
+    private func updateSession(_ user: AuthenticationSession?) {
+        userID = user?.userID
         email = user?.email
         refreshFaceID()
         if let user {
-            let existingPhoto = profile.id == user.uid ? profile.photoData : nil
-            profile = UserProfile(id: user.uid, displayName: user.displayName ?? "You", photoData: existingPhoto)
+            let existingPhoto = profile.id == user.userID ? profile.photoData : nil
+            profile = UserProfile(id: user.userID, displayName: user.displayName ?? "You", photoData: existingPhoto)
         } else {
             profile = UserProfile()
         }
@@ -176,22 +149,6 @@ final class AuthenticationViewModel {
         if error is LAError || (error as NSError).domain == "FaceID" {
             return error.localizedDescription
         }
-        return switch AuthErrorCode(rawValue: (error as NSError).code) {
-        case .invalidEmail: "Enter a valid email address."
-        case .wrongPassword, .userNotFound, .invalidCredential: "The email or password is incorrect. Please try again."
-        case .emailAlreadyInUse: "An account already uses this email. Sign in or reset your password."
-        case .weakPassword: "This password doesn’t meet the account’s password requirements. Please choose a stronger password."
-        case .networkError: "Check your internet connection and try again."
-        case .tooManyRequests: "Too many attempts. Please wait a little before trying again."
-        case .userDisabled: "This account is disabled. Please contact support."
-        case .operationNotAllowed: "Email/password sign-in is not enabled. Enable it in the Firebase console."
-        case .invalidAPIKey, .appNotAuthorized: "Check the Firebase configuration and registered iOS bundle ID."
-        case .requiresRecentLogin: "Please sign out and sign in again, then retry."
-        default: "The request couldn’t be completed. Please try again."
-        }
-    }
-
-    private enum ProfileUpdateError: Error {
-        case signedOut
+        return AuthenticationService.message(for: error)
     }
 }

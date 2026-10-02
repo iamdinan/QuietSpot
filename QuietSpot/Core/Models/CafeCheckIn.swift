@@ -1,7 +1,8 @@
 import Foundation
 
 struct CafeCheckIn: Identifiable {
-    let id = UUID()
+    var id: String = UUID().uuidString
+    var createdAt: Date? = nil
     let time: String
     let noiseLevel: NoiseLevel
     let wifi: String

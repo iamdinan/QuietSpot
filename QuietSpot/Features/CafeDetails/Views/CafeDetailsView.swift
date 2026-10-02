@@ -49,7 +49,7 @@ struct CafeDetailsView: View {
                     Text("Recent check-ins")
                         .font(.title3.bold())
                         .accessibilityAddTraits(.isHeader)
-                    Text(cafe.recentCheckIns.isEmpty ? "No check-ins yet. Be the first to share the conditions here." : "Up to three recent check-ins · saved on this device for now")
+                    Text(checkInSummary)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
 
@@ -86,21 +86,33 @@ struct CafeDetailsView: View {
                 didSubmitCheckIn = false
             }
         }) {
-            CafeCheckInView(cafe: cafe) { checkIn in
-                cafe.record(checkIn)
+            CafeCheckInView(cafe: cafe) {
                 didSubmitCheckIn = true
             }
         }
-        .alert("Check-in saved locally", isPresented: $showsConfirmation) {
+        .alert("Check-in saved", isPresented: $showsConfirmation) {
             Button("Done", role: .cancel) {}
         } message: {
-            Text("Your check-in at \(cafe.name) is saved for this session. Online check-in sharing is coming next.")
+            Text("Your check-in at \(cafe.name) has been saved to Firebase.")
         }
+    }
+
+    private var checkInSummary: String {
+        if cafe.statusErrorMessage != nil { return "Recent check-ins are unavailable. Try refreshing Home." }
+        if cafe.isLoadingStatus { return "Loading recent check-ins…" }
+        return cafe.recentCheckIns.isEmpty
+            ? "No check-ins yet. Be the first to share the conditions here."
+            : "The three most recent check-ins from the community"
     }
 }
 
 #Preview {
     NavigationStack {
-        CafeDetailsView(cafe: .constant(CafeSampleData.cafes[0]))
+        CafeDetailsView(cafe: .constant(CafeSnapshot(
+            name: "Café preview", area: "Colombo",
+            description: "A comfortable spot for coffee and conversation.",
+            latitude: 6.9147, longitude: 79.8610
+        )))
     }
+    .environment(\.loadsCafeImages, false)
 }

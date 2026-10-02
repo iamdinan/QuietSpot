@@ -5,32 +5,26 @@ struct NotificationSettingsView: View {
     @AppStorage("cafeUpdatesEnabled") private var cafeUpdatesEnabled = true
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
-    @State private var authorization: UNAuthorizationStatus?
-    @State private var isRequesting = false
-    @State private var errorMessage: String?
-
-    private var canReceiveNotifications: Bool {
-        authorization == .authorized || authorization == .provisional || authorization == .ephemeral
-    }
+    @State private var viewModel = NotificationSettingsViewModel()
 
     var body: some View {
         Form {
             Section {
-                LabeledContent("iOS permission", value: authorizationLabel)
-                if authorization == .notDetermined {
+                LabeledContent("iOS permission", value: viewModel.authorizationLabel)
+                if viewModel.authorization == .notDetermined {
                     Button("Allow notifications") {
-                        Task { await requestPermission() }
+                        Task { await viewModel.requestPermission() }
                     }
-                    .disabled(isRequesting)
-                } else if authorization != nil {
+                    .disabled(viewModel.isRequesting)
+                } else if viewModel.authorization != nil {
                     Button("Open notification settings") {
                         if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
                             openURL(url)
                         }
                     }
                 }
-                if isRequesting { ProgressView("Requesting permission…") }
-                if let errorMessage {
+                if viewModel.isRequesting { ProgressView("Requesting permission…") }
+                if let errorMessage = viewModel.errorMessage {
                     Text(errorMessage).foregroundStyle(.secondary)
                 }
             } header: {
@@ -41,10 +35,10 @@ struct NotificationSettingsView: View {
 
             Section {
                 Toggle("Café updates", isOn: Binding(
-                    get: { canReceiveNotifications && cafeUpdatesEnabled },
+                    get: { viewModel.canReceiveNotifications && cafeUpdatesEnabled },
                     set: { cafeUpdatesEnabled = $0 }
                 ))
-                .disabled(!canReceiveNotifications)
+                .disabled(!viewModel.canReceiveNotifications)
             } header: {
                 Text("Notification preferences")
             } footer: {
@@ -54,39 +48,11 @@ struct NotificationSettingsView: View {
         .navigationTitle("Notifications")
         .navigationBarTitleDisplayMode(.inline)
         .tint(AppColor.accent)
-        .task { await refreshPermission() }
+        .task { await viewModel.refreshPermission() }
         .onChange(of: scenePhase) {
             if scenePhase == .active {
-                Task { await refreshPermission() }
+                Task { await viewModel.refreshPermission() }
             }
-        }
-    }
-
-    private var authorizationLabel: String {
-        switch authorization {
-        case .authorized: "Allowed"
-        case .provisional: "Quiet delivery"
-        case .ephemeral: "Temporarily allowed"
-        case .denied: "Not allowed"
-        case .notDetermined: "Not requested"
-        case nil: "Checking…"
-        @unknown default: "Unknown"
-        }
-    }
-
-    private func refreshPermission() async {
-        authorization = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
-    }
-
-    private func requestPermission() async {
-        isRequesting = true
-        errorMessage = nil
-        defer { isRequesting = false }
-        do {
-            _ = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
-            await refreshPermission()
-        } catch {
-            errorMessage = "Notification permission couldn’t be requested. Please try again."
         }
     }
 }

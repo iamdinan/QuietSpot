@@ -38,5 +38,5 @@ struct CommunityView: View {
 }
 
 #Preview {
-    CommunityView(cafes: .constant(CafeSampleData.cafes), insights: .constant(CommunitySampleData.insights), profile: UserProfile())
+    CommunityView(cafes: .constant([]), insights: .constant([]), profile: UserProfile())
 }

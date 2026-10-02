@@ -2,13 +2,14 @@ import SwiftUI
 
 struct CafeCheckInView: View {
     let cafe: CafeSnapshot
-    let onSubmit: (CafeCheckIn) -> Void
+    let onSubmit: () -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var noise: NoiseLevel = .quiet
     @State private var wifi = "Strong Wi‑Fi"
     @State private var outlets = "Outlets free"
     @State private var crowd = "Uncrowded"
+    @State private var viewModel = CafeCheckInViewModel()
 
     var body: some View {
         NavigationStack {
@@ -38,22 +39,44 @@ struct CafeCheckInView: View {
                     }
                 }
             }
+            .disabled(viewModel.isSubmitting)
             .navigationTitle("Check in")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .disabled(viewModel.isSubmitting)
                 }
             }
             .safeAreaInset(edge: .bottom) {
-                PrimaryButton("Submit check-in") {
-                    onSubmit(CafeCheckIn(time: "Just now", noiseLevel: noise, wifi: wifi, outlets: outlets, crowd: crowd))
-                    dismiss()
+                VStack(spacing: 8) {
+                    if viewModel.isSubmitting {
+                        ProgressView("Waiting for Firebase to confirm your check-in…")
+                            .font(.footnote)
+                    }
+                    PrimaryButton(viewModel.isSubmitting ? "Saving…" : "Submit check-in") {
+                        Task {
+                            if await viewModel.submit(cafeID: cafe.id, noise: noise, wifi: wifi, outlets: outlets, crowd: crowd) {
+                                onSubmit()
+                                dismiss()
+                            }
+                        }
+                    }
+                    .disabled(viewModel.isSubmitting)
                 }
                 .padding()
                 .background(.bar)
             }
             .tint(AppColor.accent)
+            .interactiveDismissDisabled(viewModel.isSubmitting)
+            .alert("Couldn’t save check-in", isPresented: Binding(
+                get: { viewModel.errorMessage != nil },
+                set: { if !$0 { viewModel.errorMessage = nil } }
+            )) {
+                Button("OK", role: .cancel) { viewModel.errorMessage = nil }
+            } message: {
+                Text(viewModel.errorMessage ?? "Please try again.")
+            }
         }
     }
 }

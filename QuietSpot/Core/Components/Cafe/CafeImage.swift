@@ -4,16 +4,13 @@ import SwiftUI
 struct CafeImage: View {
     let cafe: CafeSnapshot
     var allowsRetry = false
+    @Environment(\.loadsCafeImages) private var loadsCafeImages
     @State private var viewModel = CafeImageViewModel()
 
     var body: some View {
         GeometryReader { geometry in
             Group {
-                if !cafe.imageName.isEmpty {
-                    // Bundled photos are used only by the sample-data previews.
-                    Image(cafe.imageName).resizable().scaledToFill()
-                        .accessibilityLabel("Photo of \(cafe.name)")
-                } else if let image = viewModel.image {
+                if let image = viewModel.image {
                     Image(uiImage: image).resizable().scaledToFill()
                         .accessibilityLabel("Photo of \(cafe.name)")
                 } else {
@@ -58,7 +55,12 @@ struct CafeImage: View {
         }
         .accessibilityElement(children: .contain)
         .task(id: cafe.id) {
-            if cafe.imageName.isEmpty { await viewModel.load(cafeID: cafe.id) }
+            if loadsCafeImages { await viewModel.load(cafeID: cafe.id) }
         }
     }
+}
+
+extension EnvironmentValues {
+    /// Previews use placeholders instead of querying Firestore.
+    @Entry var loadsCafeImages = true
 }

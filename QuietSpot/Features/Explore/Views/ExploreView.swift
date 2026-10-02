@@ -122,5 +122,5 @@ private enum PositiveCafeFilter: CaseIterable, Hashable, Identifiable {
 }
 
 #Preview {
-    ExploreView(cafes: .constant(CafeSampleData.cafes))
+    ExploreView(cafes: .constant([]))
 }

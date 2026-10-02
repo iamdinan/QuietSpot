@@ -154,5 +154,5 @@ struct CafeMapView: View {
 }
 
 #Preview {
-    CafeMapView(cafes: .constant(CafeSampleData.cafes))
+    CafeMapView(cafes: .constant([]))
 }

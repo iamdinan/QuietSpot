@@ -3,33 +3,57 @@ import SwiftUI
 /// The parent supplies a bounded frame; all café photos share the same fill crop.
 struct CafeImage: View {
     let cafe: CafeSnapshot
+    var allowsRetry = false
+    @State private var viewModel = CafeImageViewModel()
 
     var body: some View {
         GeometryReader { geometry in
             Group {
-                if let imageURL = cafe.imageURL {
-                    AsyncImage(url: URL(string: imageURL)) { phase in
-                        if let image = phase.image {
-                            image.resizable().scaledToFill()
-                        } else {
-                            Color(uiColor: .secondarySystemFill)
-                                .overlay {
-                                    if phase.error != nil || URL(string: imageURL) == nil {
-                                        Image(systemName: "photo").foregroundStyle(.secondary)
+                if !cafe.imageName.isEmpty {
+                    // Bundled photos are used only by the sample-data previews.
+                    Image(cafe.imageName).resizable().scaledToFill()
+                } else if let image = viewModel.image {
+                    Image(uiImage: image).resizable().scaledToFill()
+                } else {
+                    Color(uiColor: .secondarySystemFill)
+                        .overlay {
+                            if let error = viewModel.errorMessage {
+                                VStack(spacing: 4) {
+                                    if geometry.size.height >= 100 {
+                                        Text("Photo unavailable")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    if allowsRetry {
+                                        Button {
+                                            Task { await viewModel.load(cafeID: cafe.id) }
+                                        } label: {
+                                            Image(systemName: "arrow.clockwise")
+                                                .frame(width: 44, height: 44)
+                                        }
+                                        .buttonStyle(.plain)
+                                        .accessibilityLabel("Reload photo of \(cafe.name)")
+                                        .accessibilityHint(error)
                                     } else {
-                                        ProgressView()
+                                        Image(systemName: "photo")
+                                            .foregroundStyle(.secondary)
                                     }
                                 }
+                            } else if viewModel.isLoading {
+                                ProgressView().accessibilityLabel("Loading café photo")
+                            } else {
+                                Image(systemName: "photo").foregroundStyle(.secondary)
+                            }
                         }
-                    }
-                } else {
-                    Image(cafe.imageName).resizable().scaledToFill()
                 }
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
             .clipped()
         }
-        .accessibilityElement(children: .ignore)
+        .accessibilityElement(children: .contain)
         .accessibilityLabel("Photo of \(cafe.name)")
+        .task(id: cafe.id) {
+            if cafe.imageName.isEmpty { await viewModel.load(cafeID: cafe.id) }
+        }
     }
 }

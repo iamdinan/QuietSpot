@@ -28,7 +28,6 @@ struct CafeSnapshot: Identifiable {
     var crowd: String? = nil
     var updatedAt: String? = nil
     var checkInHistory: [CafeCheckIn]? = nil
-    var imageURL: String? = nil
 
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)

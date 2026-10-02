@@ -6,6 +6,5 @@ struct CafeDocument: Decodable, Identifiable {
     let name: String
     let area: String
     let description: String
-    let imageURL: String
     let location: GeoPoint
 }

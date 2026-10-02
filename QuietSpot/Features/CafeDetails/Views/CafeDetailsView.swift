@@ -12,7 +12,7 @@ struct CafeDetailsView: View {
                 Color.clear
                     .frame(height: 240)
                     .overlay {
-                        CafeImage(cafe: cafe)
+                        CafeImage(cafe: cafe, allowsRetry: true)
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                     .accessibilityLabel("Photo of \(cafe.name)")

@@ -1,10 +1,10 @@
 # QuietSpot project guide
 
-Last reviewed: October 1, 2026. This document describes the current repository and distinguishes implemented behavior from proposed backend work. Update it when screens, persistence, or Firebase services change.
+Last reviewed: October 2, 2026. This document describes the current repository and distinguishes implemented behavior from proposed backend work. Update it at the end of a coding session when requested, rather than after every code change.
 
 ## App overview
 
-QuietSpot is a SwiftUI café discovery and conditions-monitoring app. Users find cafés, save favorites, report conditions through check-ins, and share café insights with the community. Café metadata loads from Firestore; the first configured café is Barista - Ward Place in Colombo, Sri Lanka. Café images are stored in Cloudinary, with their URLs stored in Firestore. The user confirmed that all work implemented to date is functioning on October 1, 2026.
+QuietSpot is a SwiftUI café discovery and conditions-monitoring app. Users find cafés, save favorites, report conditions through check-ins, and share café insights with the community. Café metadata loads from Firestore; the first configured café is Barista - Ward Place in Colombo, Sri Lanka. Café photos use separate Firestore Base64 image documents for the limited prototype (around 20 photos). Metadata loading was confirmed working on October 1; the Base64 loader added October 2 still requires user verification.
 
 The five tabs are always ordered **Home, Explore, Community, Map, Profile**. Firebase Authentication and café metadata reads are connected. Favorites, check-ins, and community posts/likes are still local. Do not assume that displaying a successful check-in or post means it has been saved to a server.
 
@@ -17,12 +17,12 @@ The five tabs are always ordered **Home, Explore, Community, Map, Profile**. Fir
 | Password reset | Firebase sends the reset email; user completes the reset through its link |
 | Display name | Saved to Firebase Authentication at registration and when edited |
 | Profile photo | System photo picker; resized image held locally, not uploaded |
-| Cafés and favorites | Firestore café metadata; Cloudinary images; favorites are session-only and initially empty |
+| Cafés and favorites | Firestore metadata and separate Base64 image reads; favorites are session-only and initially empty |
 | Check-ins | Update café state locally; retain the latest three reports in the prototype |
 | Community posts and likes | Initially empty; user-created posts/likes are session-only |
 | Map | MapKit and Core Location with Firestore café coordinates and local radius filtering |
 | Notifications | Real permission request/status plus a stored preference; no delivery pipeline |
-| Face ID/Touch ID | Availability display only; no biometric sign-in or app lock |
+| Face ID | Simulator-only biometric-assisted Firebase sign-in; reuses the latest successfully authenticated email/password held in memory after a matching face |
 | Firestore | Metadata reads at tab startup and Home pull-to-refresh; simulator build passed and live loading confirmed working by the user |
 | Storage, Cloud Functions, FCM | Not integrated into the app yet |
 
@@ -35,7 +35,7 @@ Sample/local content resets when the authenticated tab shell is recreated, inclu
 - Bundle identifier: `dinan.QuietSpot` (case-sensitive).
 - Apple frameworks: MapKit, CoreLocation, PhotosUI, ImageIO, UserNotifications, LocalAuthentication, and Observation/Combine.
 - Firebase products linked: `FirebaseCore`, `FirebaseAuth`, and `FirebaseFirestore`.
-- Café migration is staged: the app now reads Firestore café metadata with a Cloudinary-hosted `imageURL`. Check-ins and user favorites are not yet persisted remotely.
+- Café migration is staged: metadata comes from `cafes`; Base64 images come from `cafeImages` with matching document IDs. There is no URL-based image loader or third-party image-hosting dependency. Check-ins and user favorites are not yet persisted remotely.
 - Firebase repository: `https://github.com/firebase/firebase-ios-sdk.git`.
 - Swift Package Manager requirement: up to the next major version from `12.0.0`; current `Package.resolved` pins Firebase `12.19.2`.
 - The app folder is an Xcode file-system-synchronized group. New Swift files inside it are normally included automatically.
@@ -53,7 +53,6 @@ QuietSpot/
 └── QuietSpot/
     ├── App/
     │   ├── QuietSpotApp.swift             # SwiftUI entry point
-    │   ├── AppDelegate.swift              # Firebase startup hook
     │   ├── ContentView.swift              # Authentication/navigation shell
     │   ├── MainTabView.swift              # Five tabs and shared café state
     │   ├── AppRoute.swift
@@ -62,8 +61,9 @@ QuietSpot/
     ├── Core/
     │   ├── Models/                        # CafeDocument, CafeSnapshot, CafeCheckIn,
     │   │                                  # CafeInsight, UserProfile
-    │   ├── Services/                      # FirebaseConfiguration, CafeService
-    │   ├── ViewModels/CafeViewModel.swift  # Shared café loading/state
+    │   ├── Services/                      # FirebaseConfiguration, CafeService,
+    │   │                                  # CafeImageService, SimulatorFaceIDService
+    │   ├── ViewModels/                    # CafeViewModel, CafeImageViewModel
     │   ├── Location/LocationProvider.swift
     │   ├── SampleData/                    # CafeSampleData, CommunitySampleData
     │   ├── Components/
@@ -93,7 +93,8 @@ QuietSpot/
 
 ### Organization rules
 
-- `CafeDocument` decodes café metadata (`name`, `area`, `description`, `imageURL`, `location`) and the Firestore document ID. `CafeService.fetchCafes()` performs a one-time server read of `cafes`, returns cafés sorted by name, and propagates network/permission/decoding errors. `CafeViewModel` maps these to shared `CafeSnapshot` UI state after sign-in. Refreshes preserve session-only favorites/check-ins by document ID. There is no realtime listener or remote check-in reading yet.
+- `CafeDocument` decodes café metadata (`name`, `area`, `description`, `location`) and the Firestore document ID. `CafeService.fetchCafes()` performs a one-time server read of `cafes`, returns cafés sorted by name, and propagates network/permission/decoding errors. `CafeViewModel` maps these to shared `CafeSnapshot` UI state after sign-in. Refreshes preserve session-only favorites/check-ins by document ID. There is no realtime listener or remote check-in reading yet.
+- `CafeImageService` performs individual server reads of `cafeImages/{cafeID}`, decodes Base64 to `Data` and `UIImage`, and shares concurrent requests. Its app-process memory cache is limited to 20 images/20 MiB (eviction limits, not a guaranteed hard memory cap). `CafeImageViewModel` handles loading/errors; reusable `CafeImage` renders photos and retry placeholders. Map-only views do not fetch image documents. The cache is not disk-persistent and image changes require eviction/app restart to refetch a successfully cached photo.
 
 - Keep screen-specific code inside its feature. Shared models, reusable UI, and cross-feature services belong in `Core`.
 - Reuse `CafeStatusCard`, `CafeStatusGrid`, `CafePager`, `CafeInsightFeed`, and `ProfileAvatar` instead of duplicating them.
@@ -129,7 +130,7 @@ Do not introduce extra statuses such as “moderate crowd.” The shared status 
 ### Screen behavior
 
 - **Landing:** café hero image, app name/title, Sign in to continue, and an appearance toggle. The image extends into the top safe area; the toggle remains below the sensor/notch area.
-- **Sign in:** welcome text, email/password fields, Forgot password, and Create an account. Successful authentication opens Home.
+- **Sign in:** welcome text, email/password fields, Forgot password, and Create an account. For an enabled email with remembered credentials, Use Face ID prompts for simulated biometrics, then signs in through Firebase without asking for the password again. Only successful Firebase authentication opens Home; no confirmation-only step or fake authenticated session is used.
 - **Create account:** display name, email, password, and Create account. Firebase stores the display name without requiring a Firestore collection.
 - **Forgot password:** email field, reset button, loading/error feedback, and a neutral confirmation that does not reveal whether the address is registered.
 - **Home:** exactly three sections: favorite café pulse (latest three favorites, all four stats, no pagination); all favorites (three per page); all cafés (three per page). The last two reuse the same café card style. Updating a favorite promotes it in the pulse ordering.
@@ -141,7 +142,7 @@ Do not introduce extra statuses such as “moderate crowd.” The shared status 
 - **Profile:** centered avatar/display name/Edit profile header; left-aligned My insights with count, Settings, and confirmed Sign out.
 - **My insights:** filters posts by the current profile's user ID and reuses Community's cards/feed. Likes are shared between these screens. Post editing/deletion is not implemented.
 - **Edit profile:** add/change/remove a photo using PhotosPicker, edit display name, Save/Cancel, draft-discard protection, and photo-load errors. Name changes persist to Firebase Auth; photo changes remain in-memory. Current-user posts render the shared profile name/photo so older local posts update too.
-- **Settings:** appearance picker, Notifications, biometric availability, About QuietSpot. Map radius is controlled in Map, not Settings.
+- **Settings:** appearance picker, Notifications, Face ID toggle, About QuietSpot. Simulator Face ID enrollment and the latest successfully authenticated email/password remain only in memory and reset when the app restarts. No password-confirmation sheet, Keychain storage, or disk persistence exists. A restored Firebase session without remembered credentials must sign out and sign in with a password before enabling Face ID. Map radius is controlled in Map, not Settings.
 - **Map:** current location, proximity circle, and matching Firestore café pins. Radius is 1–10 km in 1 km steps, default 5 km. Without location, show a clearly labeled Colombo preview instead of pretending it is the user's location. Handle denied/approximate location; stop updates when Map is not active.
 
 Sample cafés and community data remain only for SwiftUI previews. The runtime app does not fall back to them on a Firestore error. Cafés without check-ins display “No check-ins yet”; missing conditions are not treated as positive filters. `CafeImage` shares bounded cropping, loading indicators, and photo-unavailable placeholders across cards, thumbnails, and details.
@@ -149,9 +150,11 @@ Sample cafés and community data remain only for SwiftUI previews. The runtime a
 ## Current authentication implementation
 
 ```text
-QuietSpotApp → AppDelegate → FirebaseConfiguration
-                                  ↓
-                          Configure Firebase SDK
+QuietSpotApp → ContentView.task → AuthenticationViewModel.start()
+                                          ↓
+                              FirebaseConfiguration
+                                          ↓
+                              Configure Firebase SDK
 
 Auth screen → AuthenticationViewModel → Firebase Authentication
                        ↓
@@ -162,10 +165,10 @@ Auth screen → AuthenticationViewModel → Firebase Authentication
 
 Key files and responsibilities:
 
-- `App/QuietSpotApp.swift`: attaches the application delegate.
-- `App/AppDelegate.swift`: invokes Firebase configuration at launch.
+- `App/QuietSpotApp.swift`: opens the root `ContentView`; Firebase startup is handled once by the authentication view model's `start()` method.
 - `Core/Services/FirebaseConfiguration.swift`: reads the bundled plist, checks bundle-ID compatibility, avoids duplicate configuration, and reports missing/mismatched setup without entering a fake authenticated session.
-- `Features/Authentication/ViewModels/AuthenticationViewModel.swift`: `@MainActor`, `@Observable`; auth-state listener, asynchronous sign-in/registration/reset/name updates, sign-out, busy state, session/profile mapping, and readable errors.
+- `Features/Authentication/ViewModels/AuthenticationViewModel.swift`: `@MainActor`, `@Observable`; auth-state listener, asynchronous sign-in/registration/reset/name updates, simulator Face ID state/actions, sign-out, busy state, session/profile mapping, and readable errors. Successful registration/password sign-in remembers credentials for the simulator prototype. `signInWithFaceID(email:)` waits for a biometric match, uses the remembered password for Firebase sign-in, and updates session state only after Firebase accepts it.
+- `Core/Services/SimulatorFaceIDService.swift`: simulator-only LocalAuthentication prompt, enabled-email set, and one in-memory email/password pair. Email matching trims whitespace and ignores case. It neither writes credentials to disk nor bypasses Firebase authentication.
 - `App/ContentView.swift`: owns and injects authentication state, restores sessions, chooses authenticated/unauthenticated navigation, and presents account notices.
 - `App/MainTabView.swift`: owns the shared café view model, local posts, and the authenticated profile across tabs. Presents café loading/error feedback with retry. The shell is keyed by user ID so another account does not inherit the previous shell's local content.
 
@@ -184,13 +187,45 @@ Package references and linked products are recorded in `project.pbxproj`; depend
 
 Registration/sign-in were confirmed working by the user. The user also confirmed receiving a password-reset email in Spam. An unsigned simulator build passed during integration. There is no automated test target currently configured.
 
-## Current café integration — working
+### Face ID — simulator-only sign-in prototype
 
-The user created a Firestore database in production mode, added a café document for Barista - Ward Place with a Cloudinary image URL, and confirmed publishing the café read rules. Live café loading and Cloudinary images are confirmed working by the user; the console configuration has not been independently inspected. The document ID may still be `glass-house`; the app displays its `name` field, not its ID. No particular document ID is hardcoded in the service.
+Simplified at the user's request on October 2, 2026. `Core/Services/SimulatorFaceIDService.swift` uses `#if targetEnvironment(simulator)` to enable LocalAuthentication and remember credentials only in Simulator. The app presents normal Face ID wording, but this is not the production biometric implementation. No Firebase collection, rule, or console provider change is needed.
+
+How sign-in works:
+
+1. A successful email/password sign-in or registration calls `remember(email:password:)`. The service keeps only the latest account's email/password pair in memory; another successful password sign-in replaces it.
+2. The signed-in user enables Face ID in Settings. The service tracks enabled emails in memory, and an email is usable only if it matches the remembered credentials.
+3. Sign-out clears the Firebase session and local tab-shell content, but intentionally retains the simulator credentials/enrollment for another sign-in during the same app run.
+4. `authenticate(email:)` requires available Face ID, enabled enrollment, and matching remembered credentials before showing the biometric prompt. A successful simulated match returns the remembered password to the authentication view model.
+5. `signInWithFaceID(email:)` submits the entered email and remembered password to Firebase. Only Firebase success updates the authenticated user/profile and opens Home. Network failures, changed passwords, or disabled accounts still prevent sign-in.
+
+The user does not re-enter a password after the face matches. This is still Firebase email/password authentication behind the scenes, not a separate Firebase Face ID provider.
+
+Test steps:
+
+1. Run a Face ID iPhone simulator and choose Features → Face ID → Enrolled.
+2. Sign in normally, open Profile → Settings, and turn on Face ID.
+3. Sign out and enter the same email on Sign in. Tap Use Face ID.
+4. Leave the password field empty and choose Features → Face ID → Matching Face. Firebase sign-in should complete and open Home without another password prompt. Non-matching Face must not initiate Firebase sign-in; cancellation is handled quietly.
+5. Verify that network or invalid-credential failures stay on Sign in with an error rather than opening Home.
+6. Turning Face ID off hides the button for that email but does not erase the in-memory credential pair. Restarting the app clears both credentials and enrollment. Firebase may independently restore its session after relaunch; sign out and sign in with a password before enabling Face ID again.
+7. On physical devices, availability is always false, no password is remembered by this service, and biometric-assisted sign-in cannot run.
+
+The former `FaceIDService` protected Keychain implementation and `FaceIDSetupView` password-confirmation sheet were removed, along with password-enrollment reauthentication and their extra state/error plumbing. No previous OS Keychain entries were read or deleted by this source-code cleanup; previously stored entries, if any, are not used by the prototype. These removed source files were not committed, so they cannot be restored through Git; production biometric login can be reimplemented later.
+
+At the user's request, app-facing labels, permission text, and the biometric prompt use ordinary Face ID wording without simulator/demo labels: Settings shows Face ID, Sign in shows Use Face ID, and the prompt asks to verify identity for QuietSpot. The former success notice asking users to enter their password again has been removed.
+
+This is a simulator testing prototype, not production-secure biometric login or an app lock. The password is retained as an ordinary in-memory string until replaced or the app terminates; it is not Keychain-protected. Nothing is saved to Firestore, app preferences, or disk by this service. Normal Firebase email/password authentication and session restoration remain available. Before device support or release, replace this with protected Keychain credentials or another valid Firebase authentication mechanism; never use a face match alone to fabricate a Firebase session.
+
+Verification: simulator and unsigned generic iOS device builds passed after the latest biometric-assisted Firebase sign-in changes. Interactive matching/non-matching, cancellation, Firebase failure, and restart behavior still need runtime testing using the steps above; compile success is not proof that those flows have been exercised.
+
+## Current café integration — metadata working, Base64 images awaiting verification
+
+The user created a Firestore database in production mode, added a café document for Barista - Ward Place, and confirmed publishing the café read rules. Live metadata was confirmed working on October 1; the console configuration has not been independently inspected. The document ID may still be `glass-house`; the app displays its `name` field, not its ID. No particular document ID is hardcoded in the service.
 
 ```text
 Firestore cafes → CafeService → CafeViewModel → MainTabView shared bindings
-Cloudinary imageURL → CafeImage → cards, thumbnails, café details
+cafeImages/{cafeID}.imageBase64 → CafeImageService/cache → CafeImageViewModel → CafeImage
 ```
 
 Every document returned from `cafes` must contain these exact case-sensitive fields:
@@ -200,10 +235,13 @@ Every document returned from `cafes` must contain these exact case-sensitive fie
 | `name` | String | Display name, currently Barista - Ward Place |
 | `area` | String | Area shown on cards/details |
 | `description` | String | Short café description |
-| `imageURL` | String | Direct HTTPS image URL hosted on Cloudinary |
 | `location` | GeoPoint | Café latitude/longitude; not a nested map |
 
-`@DocumentID` supplies the document ID during decoding; do not add a separate `id` field. The old bundled-image `imageName` field is not required for Firestore cafés. Favorites and check-ins are separate future user/report records, not required metadata fields.
+`@DocumentID` supplies the document ID during decoding; do not add a separate `id` field. Bundled-image names belong only to local preview data, not Firestore café metadata. Favorites and check-ins are separate future user/report records, not required metadata fields.
+
+The user reports creating `cafeImages/{cafeID}` with a String field named `imageBase64`, publishing authenticated read-only image rules, and adding a single-field indexing exemption for `imageBase64`. The image document ID must exactly match its café's ID. Store raw Base64 text without a `data:image/...;base64,` prefix. Whitespace/newlines are removed before decoding; invalid data or missing documents show a retry placeholder rather than failing café metadata loading.
+
+Resize/compress source JPEGs to approximately 100–200 KB for this prototype before encoding. Base64 adds roughly one-third to their size, and the entire image document must stay below Firestore's 1 MiB limit. The free tier has usage limits; this is not unlimited free image hosting. See [Firestore limits](https://firebase.google.com/docs/firestore/quotas) and [indexing best practices](https://firebase.google.com/docs/firestore/best-practices).
 
 The user confirmed publishing this initial read-only rule set:
 
@@ -215,16 +253,21 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if false;
     }
+    match /cafeImages/{cafeID} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
   }
 }
 ```
 
-This permits authenticated café reads and no client writes; unmatched collections remain inaccessible. Future collections need their own narrowly scoped rules. Do not make the database public to bypass a loading failure.
+This permits authenticated café/image reads and no client writes; unmatched collections remain inaccessible. Future collections need their own narrowly scoped rules. Do not make the database public to bypass a loading failure.
 
 ### Verification and troubleshooting
 
-- The Firestore SDK, shared view model, navigation-ID migration, and remote-image component compile in the simulator build. The user separately confirmed live Firebase café reads, Cloudinary image loading, and all implemented work to date functioning.
+- The Firestore SDK, shared view model, navigation-ID migration, and Base64 image component compile in the simulator build. The user separately confirmed the existing app features and live Firebase café metadata reads working before the Base64 migration.
 - The previously reported café-loading error is resolved. Its exact cause/fix was not supplied; no loading issue is currently outstanding.
+- The Base64 image loader must be tested in the app: confirm Barista's photo in Home, Explore, details, and favorite thumbnails. Runtime photos come exclusively from Firestore; there is no URL-based fallback. Photo failures offer a retry button on café details, not nested inside tappable café cards. No remote records or hosted files were deleted during the local-code cleanup.
 - `CafeService` fetches all café documents from the server and decodes them with `CafeDocument`. One missing or incorrectly typed required field in any document fails the whole load. It does not silently drop documents or fall back to sample cafés. See [Firebase Swift decoding](https://firebase.google.com/docs/firestore/solutions/swift-codable-data-mapping).
 - If a future error indicates missing data or a type mismatch, inspect every café document against the field table above. If it indicates insufficient permissions, verify the deployed rules, signed-in session, and that the app's configuration points to the same Firebase project. Capture the complete error before selecting a fix for network/API configuration failures.
 - Café metadata loads on tab-shell startup; pull-to-refresh on Home or Try again on the error banner repeats the server read. There is no realtime listener yet.
@@ -233,12 +276,14 @@ This permits authenticated café reads and no client writes; unmatched collectio
 ### Cleanup audit
 
 - Removed the unused `CafeDocument.coordinate` helper and its `CoreLocation` import. MapKit uses `CafeSnapshot.coordinate` instead.
-- No unused Swift files or asset sets were identified by the reference audit. Sample data and its five café images remain in use by SwiftUI previews; the runtime app does not use them as fallback data.
-- Retained `CafeHero`, `BrandAccent`, and Xcode's configured `AccentColor`/`AppIcon` asset sets. No image assets or whole files were deleted.
+- Removed the redundant `AppDelegate.swift` and its SwiftUI delegate adaptor on October 2. `ContentView.task` already starts the authentication view model, which configures Firebase before installing the auth listener; no second launch hook is needed for the current email/password authentication. The deleted file is tracked in Git and is recoverable from the last committed version.
+- No other unused Swift files or asset sets were identified by the reference audit. Sample data and its five café images remain in use by SwiftUI previews; the runtime app does not use them as fallback data.
+- Retained `CafeHero`, `BrandAccent`, and Xcode's configured `AccentColor`/`AppIcon` asset sets. No image assets were deleted.
+- The former URL-based loader and model properties were removed during the Base64 migration. A follow-up reference audit found no remaining image-hosting code/dependency or unused Swift files/assets; obsolete migration references were removed from this guide.
 
 ## Remaining Firebase/backend structure — proposed additions
 
-Add collections incrementally as each feature is connected. Firebase Auth accounts already exist independently of Firestore documents. Use Firestore for structured records, Cloudinary for current café images (store their HTTPS URLs in `imageURL`), and trusted backend operations where derived data must be protected. Cloud Storage remains an optional future image provider, not a requirement for this migration.
+Add collections incrementally as each feature is connected. Firebase Auth accounts already exist independently of Firestore documents. Use Firestore for structured records and separate Base64 photo documents for this limited prototype. Use trusted backend operations where derived data must be protected. A dedicated image-storage provider remains an optional future scaling improvement.
 
 ```text
 users/{userID}                         # Community-visible profile
@@ -249,10 +294,13 @@ users/{userID}                         # Community-visible profile
     cafeUpdatesEnabled, mapRadiusKilometers
 
 cafes/{cafeID}
-  name, area, description, imageURL
+  name, area, description
   location: GeoPoint, geohash
   latestStatus:
     noise, wifi, outlets, crowd, checkedAt, checkInID
+
+cafeImages/{cafeID}                    # Implemented image-reading path
+  imageBase64: String
 
 checkIns/{checkInID}
   cafeID, authorID, noise, wifi, outlets, crowd, createdAt
@@ -263,7 +311,7 @@ posts/{postID}
     createdAt
 ```
 
-The basic café metadata fields above are already expected by the app. User records, geohashes, latest-status summaries, check-ins, posts, and likes shown here remain proposed additions, not connected backend features. Collection paths alternate between collections and documents; `private/settings` is a subcollection/document under a user.
+The basic café metadata and image fields above are already expected by the app. User records, geohashes, latest-status summaries, check-ins, posts, and likes shown here remain proposed additions, not connected backend features. Collection paths alternate between collections and documents; `private/settings` is a subcollection/document under a user.
 
 ### Data and query rules
 
@@ -281,7 +329,7 @@ The basic café metadata fields above are already expected by the app. User reco
 
 ### Photos, preferences, and notifications
 
-- Host current café images on Cloudinary and store their HTTPS URLs in Firestore's `imageURL` field. Profile photo uploads are not connected yet; select their provider and secure upload flow separately. Avoid embedding photos/base64 in Firestore documents, and never bundle image-provider API secrets in the app.
+- Current café photos use Base64 strings in separate Firestore `cafeImages` documents, exempt from indexing, as an explicit small-prototype tradeoff. Do not embed them in the café metadata documents or automatically fetch all photos for Map. Profile photo uploads are not connected yet; select their provider and secure upload flow separately. Never bundle privileged backend/image-provider secrets in the app.
 - Cloud Storage currently requires a Blaze billing account; eligible no-cost allowances vary by bucket/location. Do not promise universally free photo storage. See [Storage billing requirements](https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024).
 - When Firestore profiles are added, explicitly choose the source of truth and synchronization policy for display names; the current source is Firebase Auth. Changing this must preserve name updates on historical posts.
 - Cache radius/settings locally and optionally synchronize account preferences. Appearance may remain device-specific. Biometric enrollment is managed by iOS, not Firebase.
@@ -290,7 +338,7 @@ The basic café metadata fields above are already expected by the app. User reco
 
 ## Security and privacy requirements
 
-- Never store passwords in Firestore or app preferences; Firebase Authentication handles credentials.
+- Never store passwords in Firestore or app preferences. The current simulator-only Face ID prototype deliberately retains the latest authenticated password in memory to reuse with Firebase after a face match; it does not write passwords to disk or access Keychain credentials. This is a temporary testing tradeoff, not production security. Physical-device biometric support requires a protected credential design before release.
 - Keep email and private settings out of community-visible profile documents. Only authenticated owners may change their profile, favorites, preferences, posts, and like records, according to feature rules.
 - Before connecting collections, deploy deny-by-default Firestore/Storage rules with explicit permitted reads/writes and field/type/enum validation. Restrict café metadata and derived summaries/counts to trusted writers.
 - Creating a community post should verify that its `authorID` is the authenticated user and that the selected café is favorited at creation time. Removing a favorite later should not implicitly delete historical posts.
@@ -303,6 +351,6 @@ The basic café metadata fields above are already expected by the app. User reco
 
 ## Development handoff
 
-Continue feature-by-feature: add the required Firebase product/service, implement its data layer and rules, replace sample data for that feature, and verify persistence and cross-account isolation. Keep the folder structure simple and update this document to reflect what actually ships.
+Continue feature-by-feature: add the required Firebase product/service, implement its data layer and rules, replace sample data for that feature, and verify persistence and cross-account isolation. Keep the folder structure simple and update this document at the end of the coding session when requested to reflect what actually ships.
 
 UI checks should include light/dark mode, large accessibility text, small iPhone layouts, readable image crops, navigation/back behavior, empty favorites/results/posts, permission-denied location/notifications, and network failures. Authentication checks should include session restoration, failed credentials, duplicate registration, reset email, name changes, and confirmed sign-out. A successful build alone is not evidence that every live backend flow works.

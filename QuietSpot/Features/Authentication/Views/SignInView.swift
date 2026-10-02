@@ -7,11 +7,13 @@ import SwiftUI
 
 struct SignInView: View {
     @Environment(AuthenticationViewModel.self) private var authentication
+    @Environment(\.scenePhase) private var scenePhase
     let onForgotPassword: () -> Void
     let onRegister: () -> Void
 
     @State private var email = ""
     @State private var password = ""
+    @State private var hasFaceID = false
 
     var body: some View {
         ScrollView {
@@ -52,7 +54,28 @@ struct SignInView: View {
                     .disabled(!authentication.canAuthenticate || email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || password.isEmpty)
                     .padding(.top, 32)
 
-                AuthenticationFeedback(progressMessage: "Signing in…")
+                AuthenticationFeedback(progressMessage: "Please wait…")
+
+                if hasFaceID {
+                    Button {
+                        Task {
+                            await authentication.signInWithFaceID(email: email)
+                            refreshFaceID()
+                        }
+                    } label: {
+                        Label("Use Face ID", systemImage: "faceid")
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(AppColor.accent)
+                    .disabled(!authentication.canAuthenticate || !authentication.faceIDAvailable)
+                    .padding(.top, 16)
+
+                    Text(authentication.faceIDMessage)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .padding(.top, 8)
+                }
 
                 Spacer(minLength: 36)
 
@@ -71,6 +94,17 @@ struct SignInView: View {
         .disabled(authentication.isBusy)
         .navigationBarBackButtonHidden(authentication.isBusy)
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear(perform: refreshFaceID)
+        .onChange(of: email) { refreshFaceID() }
+        .onChange(of: authentication.canAuthenticate) { refreshFaceID() }
+        .onChange(of: scenePhase) {
+            if scenePhase == .active { refreshFaceID() }
+        }
+    }
+
+    private func refreshFaceID() {
+        authentication.refreshFaceID()
+        hasFaceID = authentication.hasFaceID(email: email)
     }
 }
 

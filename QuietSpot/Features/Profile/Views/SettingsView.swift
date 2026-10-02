@@ -1,11 +1,9 @@
 import SwiftUI
-import LocalAuthentication
 
 struct SettingsView: View {
+    @Environment(AuthenticationViewModel.self) private var authentication
     @AppStorage("appearanceMode") private var appearanceMode = AppAppearance.system.rawValue
     @Environment(\.scenePhase) private var scenePhase
-    @State private var biometricName = "Biometrics"
-    @State private var biometricStatus = "Unavailable"
 
     var body: some View {
         Form {
@@ -24,11 +22,17 @@ struct SettingsView: View {
             }
 
             Section {
-                LabeledContent(biometricName, value: biometricStatus)
+                Toggle(isOn: Binding(
+                    get: { authentication.faceIDEnabled },
+                    set: { authentication.setFaceIDEnabled($0) }
+                )) {
+                    Label("Face ID", systemImage: "faceid")
+                }
+                .disabled(authentication.isBusy || (!authentication.faceIDAvailable && !authentication.faceIDEnabled))
             } header: {
                 Text("Security")
             } footer: {
-                Text("Device authentication is managed in iOS Settings. App unlocking with biometrics is not enabled in QuietSpot yet.")
+                Text(authentication.faceIDMessage)
             }
 
             Section {
@@ -41,23 +45,10 @@ struct SettingsView: View {
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear(perform: refreshBiometrics)
+        .onAppear { authentication.refreshFaceID() }
         .onChange(of: scenePhase) {
-            if scenePhase == .active { refreshBiometrics() }
+            if scenePhase == .active { authentication.refreshFaceID() }
         }
-    }
-
-    private func refreshBiometrics() {
-        let context = LAContext()
-        let isAvailable = context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
-        switch context.biometryType {
-        case .faceID: biometricName = "Face ID"
-        case .touchID: biometricName = "Touch ID"
-        case .opticID: biometricName = "Optic ID"
-        case .none: biometricName = "Biometrics"
-        @unknown default: biometricName = "Biometrics"
-        }
-        biometricStatus = isAvailable ? "Available on this device" : "Unavailable"
     }
 }
 
@@ -86,4 +77,5 @@ private struct AboutQuietSpotView: View {
     NavigationStack {
         SettingsView()
     }
+    .environment(AuthenticationViewModel())
 }

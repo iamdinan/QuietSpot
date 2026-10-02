@@ -1,4 +1,5 @@
 import FirebaseAuth
+import LocalAuthentication
 import Foundation
 import Observation
 
@@ -6,6 +7,10 @@ import Observation
 @Observable
 final class AuthenticationViewModel {
     private(set) var userID: String?
+    private(set) var email: String?
+    private(set) var faceIDEnabled = false
+    private(set) var faceIDAvailable = false
+    private(set) var faceIDMessage = "Checking Face ID…"
     private(set) var isRestoringSession = true
     private(set) var isBusy = false
     private(set) var isCreatingAccount = false
@@ -15,6 +20,7 @@ final class AuthenticationViewModel {
 
     @ObservationIgnored private var listener: AuthStateDidChangeListenerHandle?
     @ObservationIgnored private var hasStarted = false
+    @ObservationIgnored private let faceID = FaceIDService()
 
     deinit {
         if let listener { Auth.auth().removeStateDidChangeListener(listener) }
@@ -32,10 +38,11 @@ final class AuthenticationViewModel {
             isRestoringSession = false
             return
         }
-        listener = Auth.auth().addStateDidChangeListener { [weak self] _, user in
+        listener = Auth.auth().addStateDidChangeListener { [weak self] _, _ in
             Task { @MainActor [weak self] in
-                self?.updateSession(user)
-                self?.isRestoringSession = false
+                guard let self else { return }
+                self.updateSession(Auth.auth().currentUser)
+                self.isRestoringSession = false
             }
         }
     }
@@ -43,6 +50,41 @@ final class AuthenticationViewModel {
     func signIn(email: String, password: String) async {
         _ = await perform {
             let result = try await Auth.auth().signIn(withEmail: email.trimmingCharacters(in: .whitespacesAndNewlines), password: password)
+            faceID.remember(email: result.user.email ?? email, password: password)
+            updateSession(result.user)
+        }
+    }
+
+    func refreshFaceID() {
+        let needsPasswordSignIn = email.map { !faceID.hasCredentials(email: $0) } ?? false
+        faceIDAvailable = faceID.available && !needsPasswordSignIn
+        if !faceID.available {
+            faceIDMessage = "Face ID is unavailable. Check that Face ID is set up on your device."
+        } else if needsPasswordSignIn {
+            faceIDMessage = "Sign out and sign in with your password before enabling Face ID."
+        } else {
+            faceIDMessage = "Sign in with Face ID instead of entering your password."
+        }
+        faceIDEnabled = email.map { faceID.isEnabled(email: $0) } ?? false
+    }
+
+    func hasFaceID(email: String) -> Bool {
+        faceID.isEnabled(email: email)
+    }
+
+    func setFaceIDEnabled(_ enabled: Bool) {
+        guard let email, !isBusy else { return }
+        faceID.setEnabled(enabled, email: email)
+        refreshFaceID()
+    }
+
+    func signInWithFaceID(email: String) async {
+        _ = await perform {
+            guard let password = try await faceID.authenticate(email: email) else { return }
+            let result = try await Auth.auth().signIn(
+                withEmail: email.trimmingCharacters(in: .whitespacesAndNewlines),
+                password: password
+            )
             updateSession(result.user)
         }
     }
@@ -53,6 +95,7 @@ final class AuthenticationViewModel {
         defer { isCreatingAccount = false }
         _ = await perform {
             let result = try await Auth.auth().createUser(withEmail: email.trimmingCharacters(in: .whitespacesAndNewlines), password: password)
+            faceID.remember(email: result.user.email ?? email, password: password)
             let request = result.user.createProfileChangeRequest()
             request.displayName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
             do {
@@ -103,6 +146,8 @@ final class AuthenticationViewModel {
 
     private func updateSession(_ user: FirebaseAuth.User?) {
         userID = user?.uid
+        email = user?.email
+        refreshFaceID()
         if let user {
             let existingPhoto = profile.id == user.uid ? profile.photoData : nil
             profile = UserProfile(id: user.uid, displayName: user.displayName ?? "You", photoData: existingPhoto)
@@ -119,6 +164,8 @@ final class AuthenticationViewModel {
         do {
             try await operation()
             return true
+        } catch let error as LAError where [.userCancel, .appCancel, .systemCancel].contains(error.code) {
+            return false
         } catch {
             errorMessage = Self.message(for: error)
             return false
@@ -126,7 +173,10 @@ final class AuthenticationViewModel {
     }
 
     private static func message(for error: Error) -> String {
-        switch AuthErrorCode(rawValue: (error as NSError).code) {
+        if error is LAError || (error as NSError).domain == "FaceID" {
+            return error.localizedDescription
+        }
+        return switch AuthErrorCode(rawValue: (error as NSError).code) {
         case .invalidEmail: "Enter a valid email address."
         case .wrongPassword, .userNotFound, .invalidCredential: "The email or password is incorrect. Please try again."
         case .emailAlreadyInUse: "An account already uses this email. Sign in or reset your password."

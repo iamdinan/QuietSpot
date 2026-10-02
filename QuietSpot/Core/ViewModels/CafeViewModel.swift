@@ -28,8 +28,7 @@ final class CafeViewModel {
                     description: document.description,
                     latitude: document.location.latitude,
                     longitude: document.location.longitude,
-                    isFavorite: previous?.isFavorite ?? false,
-                    imageURL: document.imageURL
+                    isFavorite: previous?.isFavorite ?? false
                 )
                 // Preserve session-only check-ins during a metadata refresh.
                 if let previous, let latest = previous.recentCheckIns.first {

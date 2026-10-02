@@ -18,6 +18,7 @@ struct ProfileView: View {
                         VStack(spacing: 4) {
                             Text(profile.displayName)
                                 .font(.title2.bold())
+                                .accessibilityAddTraits(.isHeader)
                             Text("Your café discoveries, in one place.")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)

@@ -19,6 +19,12 @@ struct SettingsView: View {
                 } label: {
                     Label("Notifications", systemImage: "bell")
                 }
+
+                NavigationLink {
+                    AccessibilitySettingsView()
+                } label: {
+                    Label("Accessibility", systemImage: "accessibility")
+                }
             }
 
             Section {

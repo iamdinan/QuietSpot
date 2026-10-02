@@ -22,6 +22,7 @@ The five tabs are always ordered **Home, Explore, Community, Map, Profile**. Fir
 | Community posts and likes | Initially empty; user-created posts/likes are session-only |
 | Map | MapKit and Core Location with Firestore café coordinates and local radius filtering |
 | Notifications | Real permission request/status plus a stored preference; no delivery pipeline |
+| VoiceOver | Native iOS screen-reader support; live status and setup guidance in Settings → Accessibility; no app-owned toggle or speech engine |
 | Face ID | Simulator-only biometric-assisted Firebase sign-in; reuses the latest successfully authenticated email/password held in memory after a matching face |
 | Firestore | Metadata reads at tab startup and Home pull-to-refresh; simulator build passed and live loading confirmed working by the user |
 | Storage, Cloud Functions, FCM | Not integrated into the app yet |
@@ -62,7 +63,7 @@ QuietSpot/
     │   ├── Models/                        # CafeDocument, CafeSnapshot, CafeCheckIn,
     │   │                                  # CafeInsight, UserProfile
     │   ├── Services/                      # FirebaseConfiguration, CafeService,
-    │   │                                  # CafeImageService, SimulatorFaceIDService
+    │   │                                  # CafeImageService, FaceIDService
     │   ├── ViewModels/                    # CafeViewModel, CafeImageViewModel
     │   ├── Location/LocationProvider.swift
     │   ├── SampleData/                    # CafeSampleData, CommunitySampleData
@@ -87,7 +88,8 @@ QuietSpot/
     │   ├── CafeDetails/Views/              # Details and check-in composer
     │   ├── Map/Views/
     │   └── Profile/Views/                 # Profile, EditProfile, MyInsights,
-    │                                      # Settings, NotificationSettings
+    │                                      # Settings, NotificationSettings,
+    │                                      # AccessibilitySettings
     └── Assets.xcassets/                   # Hero/café images and adaptive colors
 ```
 
@@ -142,10 +144,37 @@ Do not introduce extra statuses such as “moderate crowd.” The shared status 
 - **Profile:** centered avatar/display name/Edit profile header; left-aligned My insights with count, Settings, and confirmed Sign out.
 - **My insights:** filters posts by the current profile's user ID and reuses Community's cards/feed. Likes are shared between these screens. Post editing/deletion is not implemented.
 - **Edit profile:** add/change/remove a photo using PhotosPicker, edit display name, Save/Cancel, draft-discard protection, and photo-load errors. Name changes persist to Firebase Auth; photo changes remain in-memory. Current-user posts render the shared profile name/photo so older local posts update too.
-- **Settings:** appearance picker, Notifications, Face ID toggle, About QuietSpot. Simulator Face ID enrollment and the latest successfully authenticated email/password remain only in memory and reset when the app restarts. No password-confirmation sheet, Keychain storage, or disk persistence exists. A restored Firebase session without remembered credentials must sign out and sign in with a password before enabling Face ID. Map radius is controlled in Map, not Settings.
+- **Settings:** appearance picker, Notifications, Accessibility, Face ID toggle, About QuietSpot. Simulator Face ID enrollment and the latest successfully authenticated email/password remain only in memory and reset when the app restarts. No password-confirmation sheet, Keychain storage, or disk persistence exists. A restored Firebase session without remembered credentials must sign out and sign in with a password before enabling Face ID. Map radius is controlled in Map, not Settings.
+- **Accessibility:** live VoiceOver On/Off status from SwiftUI's `accessibilityVoiceOverEnabled` environment value, system setup instructions, basic gestures, slider guidance, and a link to Apple's VoiceOver guide. No Firebase integration or separate app preference is needed.
 - **Map:** current location, proximity circle, and matching Firestore café pins. Radius is 1–10 km in 1 km steps, default 5 km. Without location, show a clearly labeled Colombo preview instead of pretending it is the user's location. Handle denied/approximate location; stop updates when Map is not active.
 
 Sample cafés and community data remain only for SwiftUI previews. The runtime app does not fall back to them on a Firestore error. Cafés without check-ins display “No check-ins yet”; missing conditions are not treated as positive filters. `CafeImage` shares bounded cropping, loading indicators, and photo-unavailable placeholders across cards, thumbnails, and details.
+
+### Native VoiceOver support and testing
+
+QuietSpot follows the system VoiceOver setting automatically, including on authentication screens before sign-in. Enable it on an iPhone through Settings → Accessibility → VoiceOver, or ask Siri to turn it on. QuietSpot does not toggle the system screen reader, require enrollment, synthesize its own speech, or store a VoiceOver preference. See [Apple's VoiceOver HIG](https://developer.apple.com/design/human-interface-guidelines/voiceover) and [VoiceOver setup guide](https://support.apple.com/guide/iphone/iph3e2e415f/ios).
+
+Implemented accessibility refinements:
+
+- `Features/Profile/Views/AccessibilitySettingsView.swift` presents system status and help; `SettingsView` links to it under Preferences.
+- Authentication fields have explicit labels; key screen titles and profile/café names expose heading traits for navigation.
+- Home section headers combine their title, café count, and subtitle into a meaningful announcement. The pulse header is grouped, while individual café links remain separate.
+- Shared café cards combine their content and hide redundant photo descriptions. Stat pills expose named noise, Wi-Fi, outlets, and crowd information rather than relying on color alone.
+- `CafePager` accepts an accessibility context so favorites, all cafés, and Explore controls identify their section and page. Page changes post an `AccessibilityNotification.Announcement` only when VoiceOver is enabled. Explore's filter control reports the active-filter count.
+- Favorite controls expose saved/selected state; like controls describe their action and use singular/plural counts. Native sliders retain adjustable behavior and report the map radius in kilometers with a descriptive hint.
+- The landing photo and appearance button are separate accessibility elements. Café details keep photo retry controls reachable instead of hiding them inside a combined photo description.
+
+For the project's Xcode 26.2 setup, Simulator testing uses Accessibility Inspector, not the complete iPhone VoiceOver speech/gesture experience:
+
+1. Run QuietSpot in the iOS Simulator.
+2. Choose Xcode → Open Developer Tool → Accessibility Inspector.
+3. Select the running simulator in the Inspector's target dropdown.
+4. Use the inspection pointer to inspect labels, values, and traits; use navigation controls to check element order.
+5. Run the accessibility audit and review reported issues. Check authentication fields, Home/widget links and headings, café stats, favorites, community likes, pagination, Explore filters, and the map radius slider.
+
+For actual VoiceOver speech and gestures, run on a physical iPhone, enable system VoiceOver, and verify QuietSpot's Accessibility status changes to On. Swipe left/right to navigate, double-tap to activate, use three-finger swipes to scroll, and swipe up/down on the selected radius slider to adjust it. Verify both On and Off status, meaningful announcements, reachable buttons, navigation/sheets, and page changes. Native VoiceOver support is separate from the currently simulator-only Face ID implementation. See [Apple's Accessibility Inspector guide](https://developer.apple.com/documentation/accessibility/accessibility-inspector) and [accessibility testing guidance](https://developer.apple.com/documentation/accessibility/performing-accessibility-testing-for-your-app).
+
+Verification: the simulator build passed after these changes, and the diff whitespace check was clean. No Inspector audit or hands-on VoiceOver session has been performed by the coding agent; do not treat compilation as proof of accessibility compliance.
 
 ## Current authentication implementation
 
@@ -168,7 +197,7 @@ Key files and responsibilities:
 - `App/QuietSpotApp.swift`: opens the root `ContentView`; Firebase startup is handled once by the authentication view model's `start()` method.
 - `Core/Services/FirebaseConfiguration.swift`: reads the bundled plist, checks bundle-ID compatibility, avoids duplicate configuration, and reports missing/mismatched setup without entering a fake authenticated session.
 - `Features/Authentication/ViewModels/AuthenticationViewModel.swift`: `@MainActor`, `@Observable`; auth-state listener, asynchronous sign-in/registration/reset/name updates, simulator Face ID state/actions, sign-out, busy state, session/profile mapping, and readable errors. Successful registration/password sign-in remembers credentials for the simulator prototype. `signInWithFaceID(email:)` waits for a biometric match, uses the remembered password for Firebase sign-in, and updates session state only after Firebase accepts it.
-- `Core/Services/SimulatorFaceIDService.swift`: simulator-only LocalAuthentication prompt, enabled-email set, and one in-memory email/password pair. Email matching trims whitespace and ignores case. It neither writes credentials to disk nor bypasses Firebase authentication.
+- `Core/Services/FaceIDService.swift`: LocalAuthentication prompt, enabled-email set, and one in-memory email/password pair. Despite its general name, the current implementation remains simulator-only. Email matching trims whitespace and ignores case. It neither writes credentials to disk nor bypasses Firebase authentication.
 - `App/ContentView.swift`: owns and injects authentication state, restores sessions, chooses authenticated/unauthenticated navigation, and presents account notices.
 - `App/MainTabView.swift`: owns the shared café view model, local posts, and the authenticated profile across tabs. Presents café loading/error feedback with retry. The shell is keyed by user ID so another account does not inherit the previous shell's local content.
 
@@ -189,7 +218,7 @@ Registration/sign-in were confirmed working by the user. The user also confirmed
 
 ### Face ID — simulator-only sign-in prototype
 
-Simplified at the user's request on October 2, 2026. `Core/Services/SimulatorFaceIDService.swift` uses `#if targetEnvironment(simulator)` to enable LocalAuthentication and remember credentials only in Simulator. The app presents normal Face ID wording, but this is not the production biometric implementation. No Firebase collection, rule, or console provider change is needed.
+Simplified at the user's request on October 2, 2026. The service was subsequently renamed to `Core/Services/FaceIDService.swift` (class `FaceIDService`); callers and the error domain (`FaceID`) were updated. This naming change did not enable physical-device support: `#if targetEnvironment(simulator)` still restricts LocalAuthentication and remembered credentials to Simulator. The app presents normal Face ID wording, but this is not the production biometric implementation. No Firebase collection, rule, or console provider change is needed.
 
 How sign-in works:
 
@@ -211,7 +240,7 @@ Test steps:
 6. Turning Face ID off hides the button for that email but does not erase the in-memory credential pair. Restarting the app clears both credentials and enrollment. Firebase may independently restore its session after relaunch; sign out and sign in with a password before enabling Face ID again.
 7. On physical devices, availability is always false, no password is remembered by this service, and biometric-assisted sign-in cannot run.
 
-The former `FaceIDService` protected Keychain implementation and `FaceIDSetupView` password-confirmation sheet were removed, along with password-enrollment reauthentication and their extra state/error plumbing. No previous OS Keychain entries were read or deleted by this source-code cleanup; previously stored entries, if any, are not used by the prototype. These removed source files were not committed, so they cannot be restored through Git; production biometric login can be reimplemented later.
+The original protected Keychain implementation and `FaceIDSetupView` password-confirmation sheet were removed, along with password-enrollment reauthentication and their extra state/error plumbing. The current `FaceIDService.swift` reuses the original service name but contains the simplified in-memory prototype, not that removed implementation. No previous OS Keychain entries were read or deleted by this source-code cleanup; previously stored entries, if any, are not used by the prototype. The removed implementation was not committed at the time of cleanup, so it cannot be restored through Git; production biometric login can be reimplemented later.
 
 At the user's request, app-facing labels, permission text, and the biometric prompt use ordinary Face ID wording without simulator/demo labels: Settings shows Face ID, Sign in shows Use Face ID, and the prompt asks to verify identity for QuietSpot. The former success notice asking users to enter their password again has been removed.
 
@@ -353,4 +382,4 @@ The basic café metadata and image fields above are already expected by the app.
 
 Continue feature-by-feature: add the required Firebase product/service, implement its data layer and rules, replace sample data for that feature, and verify persistence and cross-account isolation. Keep the folder structure simple and update this document at the end of the coding session when requested to reflect what actually ships.
 
-UI checks should include light/dark mode, large accessibility text, small iPhone layouts, readable image crops, navigation/back behavior, empty favorites/results/posts, permission-denied location/notifications, and network failures. Authentication checks should include session restoration, failed credentials, duplicate registration, reset email, name changes, and confirmed sign-out. A successful build alone is not evidence that every live backend flow works.
+UI checks should include light/dark mode, large accessibility text, small iPhone layouts, readable image crops, navigation/back behavior, empty favorites/results/posts, permission-denied location/notifications, and network failures. Use Accessibility Inspector in Simulator and test native VoiceOver speech, gestures, headings, control states, and pagination on a physical iPhone. Authentication checks should include session restoration, failed credentials, duplicate registration, reset email, name changes, and confirmed sign-out. A successful build alone is not evidence that every live backend flow or accessibility interaction works.

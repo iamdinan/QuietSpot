@@ -16,6 +16,7 @@ struct ForgotPasswordView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Reset your password")
                         .font(.largeTitle.bold())
+                        .accessibilityAddTraits(.isHeader)
 
                     Text("Enter the email address associated with your QuietSpot account.")
                         .font(.body)
@@ -24,6 +25,7 @@ struct ForgotPasswordView: View {
                 .padding(.top, 32)
 
                 TextField("Email", text: $email)
+                    .accessibilityLabel("Email")
                     .textContentType(.emailAddress)
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)

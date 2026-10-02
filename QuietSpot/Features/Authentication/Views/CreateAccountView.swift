@@ -18,6 +18,7 @@ struct CreateAccountView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Create your account")
                         .font(.largeTitle.bold())
+                        .accessibilityAddTraits(.isHeader)
 
                     Text("Save your favorite cafés and make every break feel more intentional.")
                         .font(.body)
@@ -27,10 +28,12 @@ struct CreateAccountView: View {
 
                 VStack(spacing: 16) {
                     TextField("Display name", text: $displayName)
+                        .accessibilityLabel("Display name")
                         .textContentType(.nickname)
                         .inputFieldStyle()
 
                     TextField("Email", text: $email)
+                        .accessibilityLabel("Email")
                         .textContentType(.emailAddress)
                         .keyboardType(.emailAddress)
                         .textInputAutocapitalization(.never)
@@ -38,6 +41,7 @@ struct CreateAccountView: View {
                         .inputFieldStyle()
 
                     SecureField("Password", text: $password)
+                        .accessibilityLabel("Password")
                         .textContentType(.newPassword)
                         .inputFieldStyle()
                 }

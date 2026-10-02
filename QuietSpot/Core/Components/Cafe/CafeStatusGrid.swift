@@ -39,17 +39,20 @@ struct CafeStatusGrid: View {
                 CompactStatusPill(
                     title: wifi,
                     icon: "wifi",
-                    tint: wifi == "Strong Wi‑Fi" ? AppColor.positive : AppColor.negative
+                    tint: wifi == "Strong Wi‑Fi" ? AppColor.positive : AppColor.negative,
+                    accessibilityLabel: "Wi-Fi: \(wifi == "Strong Wi‑Fi" ? "Strong" : "Spotty")"
                 )
                 CompactStatusPill(
                     title: outlets,
                     icon: "powerplug",
-                    tint: outlets == "Outlets free" ? AppColor.positive : AppColor.negative
+                    tint: outlets == "Outlets free" ? AppColor.positive : AppColor.negative,
+                    accessibilityLabel: "Outlets: \(outlets == "Outlets free" ? "Available" : "Full")"
                 )
                 CompactStatusPill(
                     title: crowd,
                     icon: "person.2",
-                    tint: crowd == "Uncrowded" ? AppColor.positive : AppColor.negative
+                    tint: crowd == "Uncrowded" ? AppColor.positive : AppColor.negative,
+                    accessibilityLabel: "Crowd: \(crowd)"
                 )
             }
         } else {

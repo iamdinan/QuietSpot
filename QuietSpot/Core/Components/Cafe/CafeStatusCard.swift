@@ -16,12 +16,13 @@ struct CafeStatusCard: View {
                         CafeImage(cafe: cafe)
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 14))
-                    .accessibilityLabel("Photo of \(cafe.name)")
+                    .accessibilityHidden(true)
             }
 
             HStack(alignment: .center, spacing: 12) {
                 if style == .widget {
                     CafeThumbnail(cafe: cafe, size: 48)
+                        .accessibilityHidden(true)
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     Text(cafe.name).font(.headline)

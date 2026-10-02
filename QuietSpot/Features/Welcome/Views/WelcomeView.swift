@@ -28,6 +28,7 @@ struct WelcomeView: View {
 
                         Text("Find your next quiet corner.")
                             .font(.largeTitle.bold())
+                            .accessibilityAddTraits(.isHeader)
                             .foregroundStyle(.primary)
                             .fixedSize(horizontal: false, vertical: true)
 
@@ -53,26 +54,28 @@ struct WelcomeView: View {
     }
 
     private func heroImage(height: CGFloat, topSafeAreaInset: CGFloat) -> some View {
-        Image("CafeHero")
-            .resizable()
-            .scaledToFill()
-            .frame(maxWidth: .infinity)
-            .frame(height: height)
-            .overlay(AppColor.heroOverlay)
-            .overlay(alignment: .topTrailing) {
-                Button(action: onToggleAppearance) {
-                    Image(systemName: colorScheme == .dark ? "sun.max.fill" : "moon.fill")
-                        .font(.headline)
-                        .frame(width: 44, height: 44)
-                }
-                .buttonStyle(.plain)
-                .background(.ultraThinMaterial, in: Circle())
-                .padding(.top, topSafeAreaInset + 8)
-                .padding(.trailing, 20)
-                .accessibilityLabel(colorScheme == .dark ? "Switch to Light Mode" : "Switch to Dark Mode")
+        ZStack(alignment: .topTrailing) {
+            Image("CafeHero")
+                .resizable()
+                .scaledToFill()
+                .frame(maxWidth: .infinity)
+                .frame(height: height)
+                .overlay(AppColor.heroOverlay)
+                .accessibilityLabel("A sunlit, quiet café interior with a cup of coffee")
+
+            Button(action: onToggleAppearance) {
+                Image(systemName: colorScheme == .dark ? "sun.max.fill" : "moon.fill")
+                    .font(.headline)
+                    .frame(width: 44, height: 44)
             }
-            .clipped()
-            .accessibilityLabel("A sunlit, quiet café interior with a cup of coffee")
+            .buttonStyle(.plain)
+            .background(.ultraThinMaterial, in: Circle())
+            .padding(.top, topSafeAreaInset + 8)
+            .padding(.trailing, 20)
+            .accessibilityLabel(colorScheme == .dark ? "Switch to Light Mode" : "Switch to Dark Mode")
+        }
+        .clipped()
+        .accessibilityElement(children: .contain)
     }
 }
 

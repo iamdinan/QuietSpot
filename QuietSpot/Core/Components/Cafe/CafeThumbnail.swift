@@ -13,6 +13,5 @@ struct CafeThumbnail: View {
         CafeImage(cafe: cafe)
             .frame(width: size, height: size)
             .clipShape(RoundedRectangle(cornerRadius: size * 0.22, style: .continuous))
-            .accessibilityLabel("Photo of \(cafe.name)")
     }
 }

@@ -21,7 +21,7 @@ struct HomeView: View {
                             Text("Tap the heart on a café’s details page to save it.")
                                 .font(.subheadline).foregroundStyle(.secondary)
                         }
-                        CafePager(cafes: favorites)
+                        CafePager(cafes: favorites, accessibilityContext: "Favorite cafés")
                     }
 
                     VStack(alignment: .leading, spacing: 14) {
@@ -30,7 +30,7 @@ struct HomeView: View {
                             Text("No cafés to display yet.")
                                 .font(.subheadline).foregroundStyle(.secondary)
                         }
-                        CafePager(cafes: cafes.sorted(by: CafeSnapshot.latestFirst))
+                        CafePager(cafes: cafes.sorted(by: CafeSnapshot.latestFirst), accessibilityContext: "All cafés")
                     }
                 }
                 .padding(20)
@@ -62,6 +62,7 @@ private struct LivePulseWidget: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
+            .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.isHeader)
 
             ForEach(Array(cafes.enumerated()), id: \.element.id) { index, cafe in
@@ -99,6 +100,9 @@ private struct SectionHeader: View {
                 .padding(10)
                 .background(Color(uiColor: .tertiarySystemFill), in: Circle())
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityValue("\(count) cafés. \(subtitle)")
         .accessibilityAddTraits(.isHeader)
     }
 }

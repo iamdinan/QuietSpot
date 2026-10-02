@@ -74,7 +74,7 @@ struct CafeInsightCard: View {
             .buttonStyle(.borderless)
             .tint(insight.isLiked ? AppColor.accent : Color.secondary)
             .accessibilityLabel(insight.isLiked ? "Unlike insight" : "Like insight")
-            .accessibilityValue("\(insight.likeCount) likes")
+            .accessibilityValue("\(insight.likeCount) \(insight.likeCount == 1 ? "like" : "likes")")
             .accessibilityHint(insight.isLiked ? "Removes your like" : "Adds your like")
             .accessibilityAddTraits(insight.isLiked ? [.isSelected] : [])
             .padding(.horizontal, 16)

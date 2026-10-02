@@ -21,6 +21,7 @@ struct SignInView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Welcome back")
                         .font(.largeTitle.bold())
+                        .accessibilityAddTraits(.isHeader)
 
                     Text("Sign in to keep your favorite quiet cafés close by.")
                         .font(.body)
@@ -30,6 +31,7 @@ struct SignInView: View {
 
                 VStack(spacing: 16) {
                     TextField("Email", text: $email)
+                        .accessibilityLabel("Email")
                         .textContentType(.emailAddress)
                         .keyboardType(.emailAddress)
                         .textInputAutocapitalization(.never)
@@ -37,6 +39,7 @@ struct SignInView: View {
                         .inputFieldStyle()
 
                     SecureField("Password", text: $password)
+                        .accessibilityLabel("Password")
                         .textContentType(.password)
                         .inputFieldStyle()
                 }

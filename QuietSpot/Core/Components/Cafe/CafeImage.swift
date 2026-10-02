@@ -12,8 +12,10 @@ struct CafeImage: View {
                 if !cafe.imageName.isEmpty {
                     // Bundled photos are used only by the sample-data previews.
                     Image(cafe.imageName).resizable().scaledToFill()
+                        .accessibilityLabel("Photo of \(cafe.name)")
                 } else if let image = viewModel.image {
                     Image(uiImage: image).resizable().scaledToFill()
+                        .accessibilityLabel("Photo of \(cafe.name)")
                 } else {
                     Color(uiColor: .secondarySystemFill)
                         .overlay {
@@ -37,12 +39,16 @@ struct CafeImage: View {
                                     } else {
                                         Image(systemName: "photo")
                                             .foregroundStyle(.secondary)
+                                            .accessibilityLabel("Photo unavailable")
+                                            .accessibilityHidden(geometry.size.height >= 100)
                                     }
                                 }
                             } else if viewModel.isLoading {
                                 ProgressView().accessibilityLabel("Loading café photo")
                             } else {
-                                Image(systemName: "photo").foregroundStyle(.secondary)
+                                Image(systemName: "photo")
+                                    .foregroundStyle(.secondary)
+                                    .accessibilityLabel("Photo of \(cafe.name)")
                             }
                         }
                 }
@@ -51,7 +57,6 @@ struct CafeImage: View {
             .clipped()
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Photo of \(cafe.name)")
         .task(id: cafe.id) {
             if cafe.imageName.isEmpty { await viewModel.load(cafeID: cafe.id) }
         }

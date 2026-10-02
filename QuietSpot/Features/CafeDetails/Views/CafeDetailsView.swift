@@ -15,12 +15,12 @@ struct CafeDetailsView: View {
                         CafeImage(cafe: cafe, allowsRetry: true)
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 20))
-                    .accessibilityLabel("Photo of \(cafe.name)")
 
                 HStack(alignment: .center, spacing: 16) {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(cafe.name)
                             .font(.title.bold())
+                            .accessibilityAddTraits(.isHeader)
                         Label(cafe.area, systemImage: "mappin.and.ellipse")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
@@ -37,6 +37,7 @@ struct CafeDetailsView: View {
                     .buttonStyle(.plain)
                     .accessibilityLabel(cafe.isFavorite ? "Remove from favorites" : "Add to favorites")
                     .accessibilityValue(cafe.isFavorite ? "Saved" : "Not saved")
+                    .accessibilityAddTraits(cafe.isFavorite ? [.isSelected] : [])
                 }
 
                 Text(cafe.description)

@@ -2,12 +2,15 @@ import SwiftUI
 
 struct CafePager: View {
     let cafes: [CafeSnapshot]
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
     @State private var selectedPage = 0
     private let pageSize: Int
+    private let accessibilityContext: String
 
-    init(cafes: [CafeSnapshot], pageSize: Int = 3) {
+    init(cafes: [CafeSnapshot], pageSize: Int = 3, accessibilityContext: String = "Cafés") {
         self.cafes = cafes
         self.pageSize = pageSize
+        self.accessibilityContext = accessibilityContext
     }
 
     private var pageCount: Int {
@@ -35,7 +38,8 @@ struct CafePager: View {
                         Image(systemName: "chevron.left").frame(width: 44, height: 44)
                     }
                     .disabled(selectedPage == 0)
-                    .accessibilityLabel("Previous cafés page")
+                    .accessibilityLabel("Previous page of \(accessibilityContext)")
+                    .accessibilityValue("Page \(selectedPage + 1) of \(pageCount)")
 
                     Spacer()
                     Text("Page \(selectedPage + 1) of \(pageCount)")
@@ -49,13 +53,19 @@ struct CafePager: View {
                         Image(systemName: "chevron.right").frame(width: 44, height: 44)
                     }
                     .disabled(selectedPage == pageCount - 1)
-                    .accessibilityLabel("Next cafés page")
+                    .accessibilityLabel("Next page of \(accessibilityContext)")
+                    .accessibilityValue("Page \(selectedPage + 1) of \(pageCount)")
                 }
                 .tint(AppColor.accent)
             }
         }
         .onChange(of: cafes.map(\.id)) {
             selectedPage = min(selectedPage, pageCount - 1)
+        }
+        .onChange(of: selectedPage) {
+            if voiceOverEnabled {
+                AccessibilityNotification.Announcement("\(accessibilityContext), page \(selectedPage + 1) of \(pageCount)").post()
+            }
         }
     }
 }

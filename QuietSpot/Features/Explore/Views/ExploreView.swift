@@ -27,7 +27,7 @@ struct ExploreView: View {
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
 
-                            CafePager(cafes: filteredCafes, pageSize: 5)
+                            CafePager(cafes: filteredCafes, pageSize: 5, accessibilityContext: "Explore cafés")
                         }
                         .padding(20)
                         .frame(maxWidth: 680)
@@ -60,6 +60,7 @@ struct ExploreView: View {
                         )
                     }
                     .accessibilityLabel("Filter cafés")
+                    .accessibilityValue(activeFilters.isEmpty ? "No active filters" : "\(activeFilters.count) active filters")
                 }
             }
             .navigationDestination(for: String.self) { cafeID in

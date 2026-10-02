@@ -21,6 +21,7 @@ struct MapRadiusControl: View {
             }
             .tint(AppColor.accent)
             .accessibilityValue("\(Int(radius)) kilometers")
+            .accessibilityHint("Adjusts the distance used to find nearby cafés, from 1 to 10 kilometers")
         }
         .padding(.vertical, 4)
     }

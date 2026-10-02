@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @Binding var cafes: [CafeSnapshot]
-    @Binding var insights: [CafeInsight]
+    @Environment(CommunityViewModel.self) private var community
     @Binding var profile: UserProfile
     let onSignOut: () -> Void
     @State private var showsSignOutConfirmation = false
@@ -36,12 +36,12 @@ struct ProfileView: View {
 
                 Section("Community") {
                     NavigationLink {
-                        MyInsightsView(cafes: $cafes, insights: $insights, profile: profile)
+                        MyInsightsView(cafes: $cafes, profile: profile)
                     } label: {
                         HStack {
                             Label("My insights", systemImage: "text.bubble")
                             Spacer()
-                            Text(insights.filter { $0.authorID == profile.id }.count, format: .number)
+                            Text(community.insights.filter { $0.authorID == profile.id }.count, format: .number)
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -77,6 +77,7 @@ struct ProfileView: View {
 }
 
 #Preview {
-    ProfileView(cafes: .constant([]), insights: .constant([]), profile: .constant(UserProfile()), onSignOut: {})
+    ProfileView(cafes: .constant([]), profile: .constant(UserProfile()), onSignOut: {})
         .environment(AuthenticationViewModel())
+        .environment(CommunityViewModel())
 }

@@ -81,7 +81,7 @@ struct EditProfileView: View {
                             }
                         }
                     }
-                    .disabled(viewModel.trimmedName.isEmpty || viewModel.isLoadingPhoto || authentication.isBusy || !hasChanges)
+                    .disabled(viewModel.trimmedName.isEmpty || viewModel.isLoadingPhoto || authentication.isBusy || !authentication.isUserDataReady || !hasChanges)
                 }
             }
             .disabled(authentication.isBusy)

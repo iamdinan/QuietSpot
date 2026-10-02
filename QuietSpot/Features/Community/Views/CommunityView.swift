@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CommunityView: View {
     @Binding var cafes: [CafeSnapshot]
-    @Binding var insights: [CafeInsight]
+    @Environment(AuthenticationViewModel.self) private var authentication
     let profile: UserProfile
     @State private var isComposing = false
 
@@ -14,9 +14,8 @@ struct CommunityView: View {
         NavigationStack {
             CafeInsightFeed(
                 cafes: $cafes,
-                insights: $insights,
                 profile: profile,
-                intro: "Insights are saved for this session. Online community sharing is coming later.",
+                intro: "Discover tips and experiences shared by the café community.",
                 notice: favorites.isEmpty ? "Save a café to your favorites to share an insight about it." : nil
             )
             .navigationTitle("Community")
@@ -25,18 +24,18 @@ struct CommunityView: View {
                     Button("Share an insight", systemImage: "square.and.pencil") {
                         isComposing = true
                     }
-                    .disabled(favorites.isEmpty)
+                    .disabled(favorites.isEmpty || !authentication.isUserDataReady)
                 }
             }
             .sheet(isPresented: $isComposing) {
-                InsightComposerView(favorites: favorites) { cafeID, text in
-                    insights.insert(CafeInsight(cafeID: cafeID, authorName: profile.displayName, text: text, createdAt: .now, authorID: profile.id), at: 0)
-                }
+                InsightComposerView(favorites: favorites)
             }
         }
     }
 }
 
 #Preview {
-    CommunityView(cafes: .constant([]), insights: .constant([]), profile: UserProfile())
+    CommunityView(cafes: .constant([]), profile: UserProfile())
+        .environment(CommunityViewModel())
+        .environment(AuthenticationViewModel())
 }

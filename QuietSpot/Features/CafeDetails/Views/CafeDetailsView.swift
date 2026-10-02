@@ -5,6 +5,7 @@ struct CafeDetailsView: View {
     @State private var showsCheckIn = false
     @State private var showsConfirmation = false
     @State private var didSubmitCheckIn = false
+    @Environment(AuthenticationViewModel.self) private var authentication
 
     var body: some View {
         ScrollView {
@@ -27,7 +28,9 @@ struct CafeDetailsView: View {
                     }
                     Spacer(minLength: 0)
                     Button {
-                        cafe.isFavorite.toggle()
+                        Task {
+                            await authentication.setFavorite(cafeID: cafe.id, enabled: !cafe.isFavorite)
+                        }
                     } label: {
                         Image(systemName: cafe.isFavorite ? "heart.fill" : "heart")
                             .font(.title2)
@@ -35,6 +38,7 @@ struct CafeDetailsView: View {
                             .frame(width: 44, height: 44)
                     }
                     .buttonStyle(.plain)
+                    .disabled(!authentication.isUserDataReady || authentication.savingFavoriteIDs.contains(cafe.id))
                     .accessibilityLabel(cafe.isFavorite ? "Remove from favorites" : "Add to favorites")
                     .accessibilityValue(cafe.isFavorite ? "Saved" : "Not saved")
                     .accessibilityAddTraits(cafe.isFavorite ? [.isSelected] : [])
@@ -115,4 +119,5 @@ struct CafeDetailsView: View {
         )))
     }
     .environment(\.loadsCafeImages, false)
+    .environment(AuthenticationViewModel())
 }

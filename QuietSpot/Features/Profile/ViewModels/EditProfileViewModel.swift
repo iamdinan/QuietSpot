@@ -47,10 +47,6 @@ final class EditProfileViewModel {
 
     func save(using authentication: AuthenticationViewModel) async -> Bool {
         guard !trimmedName.isEmpty, !isLoadingPhoto, !authentication.isBusy else { return false }
-        if trimmedName != authentication.profile.displayName {
-            guard await authentication.updateDisplayName(trimmedName) else { return false }
-        }
-        authentication.profile.photoData = photoData
-        return true
+        return await authentication.saveProfile(displayName: trimmedName, photoData: photoData)
     }
 }

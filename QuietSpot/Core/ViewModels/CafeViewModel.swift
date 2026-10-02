@@ -14,6 +14,12 @@ final class CafeViewModel {
     @ObservationIgnored private let checkInService = CafeCheckInService()
     @ObservationIgnored private var statusListeners: [String: ListenerRegistration] = [:]
     @ObservationIgnored private var listenerGeneration = UUID()
+    @ObservationIgnored private var favoriteIDs: Set<String> = []
+
+    func updateFavorites(_ ids: Set<String>) {
+        favoriteIDs = ids
+        for index in cafes.indices { cafes[index].isFavorite = ids.contains(cafes[index].id) }
+    }
 
     deinit {
         for listener in statusListeners.values { listener.remove() }
@@ -37,7 +43,7 @@ final class CafeViewModel {
                     description: document.description,
                     latitude: document.location.latitude,
                     longitude: document.location.longitude,
-                    isFavorite: previous?.isFavorite ?? false
+                    isFavorite: favoriteIDs.contains(id)
                 )
                 // Keep confirmed reports visible while refreshed listeners reconnect.
                 if let history = previous?.checkInHistory {

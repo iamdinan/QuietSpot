@@ -2,23 +2,24 @@ import SwiftUI
 
 struct InsightComposerView: View {
     let favorites: [CafeSnapshot]
-    let onShare: (String, String) -> Void
+    @Environment(CommunityViewModel.self) private var community
     @Environment(\.dismiss) private var dismiss
     @State private var selectedCafeID: String?
     @State private var text = ""
     @State private var isConfirmingDiscard = false
+    @State private var isSharing = false
+    @State private var errorMessage: String?
 
     private var trimmedText: String {
         text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private var canShare: Bool {
-        !trimmedText.isEmpty && favorites.contains { $0.id == selectedCafeID }
+        !trimmedText.isEmpty && trimmedText.count <= 2_000 && favorites.contains { $0.id == selectedCafeID } && !isSharing
     }
 
-    init(favorites: [CafeSnapshot], onShare: @escaping (String, String) -> Void) {
+    init(favorites: [CafeSnapshot]) {
         self.favorites = favorites
-        self.onShare = onShare
         _selectedCafeID = State(initialValue: favorites.first?.id)
     }
 
@@ -58,8 +59,19 @@ struct InsightComposerView: View {
                         if trimmedText.isEmpty {
                             Text("Write an insight to enable Share.")
                         }
+                        if trimmedText.count > 2_000 {
+                            Text("Keep your insight within 2,000 characters.")
+                        }
                         Text("Share a useful tip or a little discovery. Your insight will be visible to the community.")
                     }
+                }
+            }
+            .disabled(isSharing)
+            .overlay {
+                if isSharing {
+                    ProgressView("Sharing insight…")
+                        .padding()
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
                 }
             }
             .navigationTitle("Share an insight")
@@ -73,12 +85,23 @@ struct InsightComposerView: View {
                             isConfirmingDiscard = true
                         }
                     }
+                    .disabled(isSharing)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Share") {
-                        guard canShare, let selectedCafeID else { return }
-                        onShare(selectedCafeID, trimmedText)
-                        dismiss()
+                        guard canShare, let cafeID = selectedCafeID else { return }
+                        let insightText = trimmedText
+                        let viewModel = community
+                        isSharing = true
+                        Task { @MainActor [cafeID, insightText, viewModel] in
+                            defer { isSharing = false }
+                            do {
+                                try await viewModel.share(cafeID: cafeID, text: insightText)
+                                dismiss()
+                            } catch {
+                                errorMessage = "Couldn’t share your insight. \(error.localizedDescription)"
+                            }
+                        }
                     }
                     .disabled(!canShare)
                 }
@@ -87,7 +110,15 @@ struct InsightComposerView: View {
                 Button("Discard insight", role: .destructive) { dismiss() }
                 Button("Keep writing", role: .cancel) {}
             }
-            .interactiveDismissDisabled(!text.isEmpty)
+            .interactiveDismissDisabled(!text.isEmpty || isSharing)
+            .alert("Insight wasn’t shared", isPresented: Binding(
+                get: { errorMessage != nil },
+                set: { if !$0 { errorMessage = nil } }
+            )) {
+                Button("OK", role: .cancel) { errorMessage = nil }
+            } message: {
+                Text(errorMessage ?? "Please try again.")
+            }
             .onChange(of: favorites.map(\.id)) { _, ids in
                 if let selectedCafeID, !ids.contains(selectedCafeID) {
                     self.selectedCafeID = ids.first

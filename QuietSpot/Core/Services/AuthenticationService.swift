@@ -48,20 +48,11 @@ final class AuthenticationService {
         }
     }
 
-    func updateDisplayName(_ name: String) async throws -> AuthenticationSession {
-        guard let user = Auth.auth().currentUser else { throw AccountError.signedOut }
-        let request = user.createProfileChangeRequest()
-        request.displayName = name
-        try await request.commitChanges()
-        return session(user)
-    }
-
     func signOut() throws {
         try Auth.auth().signOut()
     }
 
     static func message(for error: Error) -> String {
-        if error is AccountError { return error.localizedDescription }
         return switch AuthErrorCode(rawValue: (error as NSError).code) {
         case .invalidEmail: "Enter a valid email address."
         case .wrongPassword, .userNotFound, .invalidCredential: "The email or password is incorrect. Please try again."
@@ -85,8 +76,4 @@ final class AuthenticationService {
         email.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private enum AccountError: LocalizedError {
-        case signedOut
-        var errorDescription: String? { "Please sign in again before updating your profile." }
-    }
 }

@@ -5,6 +5,7 @@ struct CafeInsightCard: View {
     let cafe: CafeSnapshot
     let profile: UserProfile
     let onToggleLike: () -> Void
+    var isLikeEnabled = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -35,7 +36,7 @@ struct CafeInsightCard: View {
 
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 8) {
-                    ProfileAvatar(photoData: insight.authorID == profile.id ? profile.photoData : nil, size: 28)
+                    ProfileAvatar(photoData: insight.authorID == profile.id ? profile.photoData : insight.authorPhotoData, size: 28)
 
                     ViewThatFits(in: .horizontal) {
                         HStack(spacing: 6) {
@@ -72,6 +73,7 @@ struct CafeInsightCard: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.borderless)
+            .disabled(!isLikeEnabled)
             .tint(insight.isLiked ? AppColor.accent : Color.secondary)
             .accessibilityLabel(insight.isLiked ? "Unlike insight" : "Like insight")
             .accessibilityValue("\(insight.likeCount) \(insight.likeCount == 1 ? "like" : "likes")")

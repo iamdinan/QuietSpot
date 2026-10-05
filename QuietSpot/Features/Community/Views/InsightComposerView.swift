@@ -66,6 +66,7 @@ struct InsightComposerView: View {
                     }
                 }
             }
+            .readableGroupedContent()
             .disabled(isSharing)
             .overlay {
                 if isSharing {
@@ -103,7 +104,7 @@ struct InsightComposerView: View {
                             }
                         }
                     }
-                    .disabled(!canShare)
+                    .disabled(NetworkStatus.shared.isOffline || !canShare)
                 }
             }
             .confirmationDialog("Discard this insight?", isPresented: $isConfirmingDiscard, titleVisibility: .visible) {

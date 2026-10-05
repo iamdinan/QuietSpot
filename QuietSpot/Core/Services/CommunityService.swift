@@ -12,7 +12,13 @@ final class CommunityService {
                 Task { @MainActor in
                     if let error { onChange(.failure(error)); return }
                     guard let snapshot, !snapshot.metadata.hasPendingWrites else { return }
-                    if snapshot.metadata.isFromCache && snapshot.documents.isEmpty { return }
+                    if !OfflineQueryCache().canUseSnapshot(
+                        key: "communityPosts", isFromCache: snapshot.metadata.isFromCache,
+                        isEmpty: snapshot.documents.isEmpty
+                    ) {
+                        if NetworkStatus.shared.isOffline { onChange(.failure(OfflineBrowsingError.noCachedData)) }
+                        return
+                    }
                     do {
                         let insights = try snapshot.documents.map { document in
                             let post = try document.data(as: CafeInsightDocument.self)
@@ -28,6 +34,7 @@ final class CommunityService {
     }
 
     func share(cafeID: String, text: String, userID: String) async throws {
+        try NetworkStatus.shared.requireConnection()
         guard Auth.auth().currentUser?.uid == userID else { throw CocoaError(.userCancelled) }
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty, trimmed.count <= 2_000 else {
@@ -56,6 +63,7 @@ final class CommunityService {
     }
 
     func setLiked(postID: String, userID: String, liked: Bool) async throws {
+        try NetworkStatus.shared.requireConnection()
         guard Auth.auth().currentUser?.uid == userID else { throw CocoaError(.userCancelled) }
         let post = posts.document(postID)
         let like = post.collection("likes").document(userID)

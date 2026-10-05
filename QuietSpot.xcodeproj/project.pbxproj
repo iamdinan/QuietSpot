@@ -7,43 +7,92 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6E114CC5B7274E80B4AD993E /* QuietSpotWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 11904E7CC11F4882A48B5486 /* QuietSpotWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A17E0001306E214600000001 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A17E0003306E214600000001 /* FirebaseCore */; };
 		A17E0002306E214600000001 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A17E0004306E214600000001 /* FirebaseAuth */; };
 		A17E0006306E214600000001 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A17E0007306E214600000001 /* FirebaseFirestore */; };
-		6E114CC5B7274E80B4AD993E /* QuietSpotWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 11904E7CC11F4882A48B5486; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		2B6F58C4B90C4B849F97FE47 /* CafeCheckInTimeFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4427ADE11A7649A9B058DC62; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		57DF30BBB6C14D4E9726EF17 = {isa = PBXContainerItemProxy; containerPortal = E7248071306E2146008FCF77; proxyType = 1; remoteGlobalIDString = 04A35672CA574EA69E93AEFA; remoteInfo = QuietSpotWidgets; };
+		57DF30BBB6C14D4E9726EF17 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E7248071306E2146008FCF77 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 04A35672CA574EA69E93AEFA;
+			remoteInfo = QuietSpotWidgets;
+		};
+		B57E00010000000000000008 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E7248071306E2146008FCF77 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E7248078306E2146008FCF77;
+			remoteInfo = QuietSpot;
+		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXTargetDependency section */
-		3E7D68F2F35144678B588693 = {isa = PBXTargetDependency; target = 04A35672CA574EA69E93AEFA; targetProxy = 57DF30BBB6C14D4E9726EF17; };
-/* End PBXTargetDependency section */
-
 /* Begin PBXCopyFilesBuildPhase section */
-		300B3FDA397E40EAADEAE0FB /* Embed App Extensions */ = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147483647; dstPath = ""; dstSubfolderSpec = 13; files = (6E114CC5B7274E80B4AD993E, ); name = "Embed App Extensions"; runOnlyForDeploymentPostprocessing = 0; };
+		300B3FDA397E40EAADEAE0FB /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				6E114CC5B7274E80B4AD993E /* QuietSpotWidgets.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		E7248079306E2146008FCF77 /* QuietSpot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuietSpot.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		11904E7CC11F4882A48B5486 /* QuietSpotWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QuietSpotWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		4427ADE11A7649A9B058DC62 /* CafeCheckInTimeFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuietSpot/Core/Models/CafeCheckInTimeFormatter.swift; sourceTree = "<group>"; };
+		B57E00010000000000000002 /* QuietSpotTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QuietSpotTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E7248079306E2146008FCF77 /* QuietSpot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuietSpot.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		16C7A5F8B57F4E1AABA0B96E /* QuietSpotWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = QuietSpotWidgets;
+			sourceTree = "<group>";
+		};
+		303AF0CFBBEF443FB89B65C7 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		B57E00010000000000000003 /* QuietSpotTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = QuietSpotTests;
+			sourceTree = "<group>";
+		};
+		C3CA60E295124B2DBCD4B896 /* Config */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Config;
+			sourceTree = "<group>";
+		};
 		E724807B306E2146008FCF77 /* QuietSpot */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = QuietSpot;
 			sourceTree = "<group>";
 		};
-		16C7A5F8B57F4E1AABA0B96E /* QuietSpotWidgets */ = {isa = PBXFileSystemSynchronizedRootGroup; path = QuietSpotWidgets; sourceTree = "<group>"; };
-		303AF0CFBBEF443FB89B65C7 /* Shared */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Shared; sourceTree = "<group>"; };
-		C3CA60E295124B2DBCD4B896 /* Config */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Config; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		4E77175421744CCFB97EA7D2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B57E00010000000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E7248076306E2146008FCF77 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -54,18 +103,17 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		4E77175421744CCFB97EA7D2 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		E7248070306E2146008FCF77 = {
 			isa = PBXGroup;
 			children = (
+				B57E00010000000000000003 /* QuietSpotTests */,
 				E724807B306E2146008FCF77 /* QuietSpot */,
-				16C7A5F8B57F4E1AABA0B96E /* Widgets */,
+				16C7A5F8B57F4E1AABA0B96E /* QuietSpotWidgets */,
 				303AF0CFBBEF443FB89B65C7 /* Shared */,
 				C3CA60E295124B2DBCD4B896 /* Config */,
-				4427ADE11A7649A9B058DC62 /* CafeCheckInTimeFormatter.swift */,
 				E724807A306E2146008FCF77 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -73,6 +121,7 @@
 		E724807A306E2146008FCF77 /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				B57E00010000000000000002 /* QuietSpotTests.xctest */,
 				E7248079306E2146008FCF77 /* QuietSpot.app */,
 				11904E7CC11F4882A48B5486 /* QuietSpotWidgets.appex */,
 			);
@@ -82,6 +131,48 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		04A35672CA574EA69E93AEFA /* QuietSpotWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E592703909D4487A8F038494 /* Build configuration list for PBXNativeTarget "QuietSpotWidgets" */;
+			buildPhases = (
+				8E88C527766049EAA29BABD4 /* Sources */,
+				4E77175421744CCFB97EA7D2 /* Frameworks */,
+				FD3EDDFD879D46DA9B3AAC5C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				16C7A5F8B57F4E1AABA0B96E /* QuietSpotWidgets */,
+				303AF0CFBBEF443FB89B65C7 /* Shared */,
+			);
+			name = QuietSpotWidgets;
+			productName = QuietSpotWidgets;
+			productReference = 11904E7CC11F4882A48B5486 /* QuietSpotWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		B57E00010000000000000001 /* QuietSpotTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B57E00010000000000000009 /* Build configuration list for PBXNativeTarget "QuietSpotTests" */;
+			buildPhases = (
+				B57E00010000000000000004 /* Sources */,
+				B57E00010000000000000005 /* Frameworks */,
+				B57E00010000000000000006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B57E00010000000000000007 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B57E00010000000000000003 /* QuietSpotTests */,
+			);
+			name = QuietSpotTests;
+			productName = QuietSpotTests;
+			productReference = B57E00010000000000000002 /* QuietSpotTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		E7248078306E2146008FCF77 /* QuietSpot */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E7248084306E2148008FCF77 /* Build configuration list for PBXNativeTarget "QuietSpot" */;
@@ -97,8 +188,8 @@
 				3E7D68F2F35144678B588693 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				E724807B306E2146008FCF77 /* QuietSpot */,
 				303AF0CFBBEF443FB89B65C7 /* Shared */,
+				E724807B306E2146008FCF77 /* QuietSpot */,
 			);
 			name = QuietSpot;
 			packageProductDependencies = (
@@ -110,18 +201,6 @@
 			productReference = E7248079306E2146008FCF77 /* QuietSpot.app */;
 			productType = "com.apple.product-type.application";
 		};
-		04A35672CA574EA69E93AEFA /* QuietSpotWidgets */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = E592703909D4487A8F038494;
-			buildPhases = (8E88C527766049EAA29BABD4, 4E77175421744CCFB97EA7D2, FD3EDDFD879D46DA9B3AAC5C, );
-			buildRules = ();
-			dependencies = ();
-			fileSystemSynchronizedGroups = (16C7A5F8B57F4E1AABA0B96E, 303AF0CFBBEF443FB89B65C7, );
-			name = QuietSpotWidgets;
-			productName = QuietSpotWidgets;
-			productReference = 11904E7CC11F4882A48B5486;
-			productType = "com.apple.product-type.app-extension";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -132,9 +211,17 @@
 				LastSwiftUpdateCheck = 2620;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
+					B57E00010000000000000001 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = E7248078306E2146008FCF77;
+					};
 					E7248078306E2146008FCF77 = {
 						CreatedOnToolsVersion = 26.2;
-						SystemCapabilities = { com.apple.ApplicationGroups.iOS = { enabled = 1; }; };
+						SystemCapabilities = {
+							com.apple.ApplicationGroups.iOS = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -155,6 +242,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				B57E00010000000000000001 /* QuietSpotTests */,
 				E7248078306E2146008FCF77 /* QuietSpot */,
 				04A35672CA574EA69E93AEFA /* QuietSpotWidgets */,
 			);
@@ -162,6 +250,13 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		B57E00010000000000000006 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E7248077306E2146008FCF77 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -169,10 +264,30 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FD3EDDFD879D46DA9B3AAC5C = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		FD3EDDFD879D46DA9B3AAC5C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		8E88C527766049EAA29BABD4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B57E00010000000000000004 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E7248075306E2146008FCF77 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -180,10 +295,112 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		8E88C527766049EAA29BABD4 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (2B6F58C4B90C4B849F97FE47, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		3E7D68F2F35144678B588693 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 04A35672CA574EA69E93AEFA /* QuietSpotWidgets */;
+			targetProxy = 57DF30BBB6C14D4E9726EF17 /* PBXContainerItemProxy */;
+		};
+		B57E00010000000000000007 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E7248078306E2146008FCF77 /* QuietSpot */;
+			targetProxy = B57E00010000000000000008 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		5BCA22101EDF49F0913B9273 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Config/QuietSpotWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/WidgetInfo.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "QuietSpot Pulse";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dinan.QuietSpot.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		B57E0001000000000000000A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = dinan.QuietSpot.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/QuietSpot.app/QuietSpot";
+			};
+			name = Debug;
+		};
+		B57E0001000000000000000B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = dinan.QuietSpot.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/QuietSpot.app/QuietSpot";
+			};
+			name = Release;
+		};
+		D6EACF2747754B32ACB04A56 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Config/QuietSpotWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/WidgetInfo.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "QuietSpot Pulse";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dinan.QuietSpot.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 		E7248082306E2148008FCF77 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -308,8 +525,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = Config/QuietSpot.entitlements;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -343,8 +560,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = Config/QuietSpot.entitlements;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -373,51 +590,27 @@
 			};
 			name = Release;
 		};
-		D6EACF2747754B32ACB04A56 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CODE_SIGN_ENTITLEMENTS = Config/QuietSpotWidgets.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Config/WidgetInfo.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "QuietSpot Pulse";
-				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", );
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dinan.QuietSpot.widgets;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 5.0;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		5BCA22101EDF49F0913B9273 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CODE_SIGN_ENTITLEMENTS = Config/QuietSpotWidgets.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Config/WidgetInfo.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "QuietSpot Pulse";
-				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", );
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dinan.QuietSpot.widgets;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 5.0;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		B57E00010000000000000009 /* Build configuration list for PBXNativeTarget "QuietSpotTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B57E0001000000000000000A /* Debug */,
+				B57E0001000000000000000B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E592703909D4487A8F038494 /* Build configuration list for PBXNativeTarget "QuietSpotWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D6EACF2747754B32ACB04A56 /* Debug */,
+				5BCA22101EDF49F0913B9273 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		E7248074306E2146008FCF77 /* Build configuration list for PBXProject "QuietSpot" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -436,7 +629,6 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E592703909D4487A8F038494 = {isa = XCConfigurationList; buildConfigurations = (D6EACF2747754B32ACB04A56, 5BCA22101EDF49F0913B9273, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */

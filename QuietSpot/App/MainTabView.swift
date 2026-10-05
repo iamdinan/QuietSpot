@@ -53,7 +53,7 @@ struct MainTabView: View {
         .onChange(of: communitySiriSnapshot, initial: true) { _, snapshot in
             snapshot.save()
         }
-        .task {
+        .task(id: NetworkStatus.shared.isOffline) {
             refreshNotificationContext()
             cafeViewModel.onConfirmedStatusChange = { [cafeNotifications] cafe, report in
                 cafeNotifications.receive(cafe: cafe, latest: report)
@@ -62,6 +62,9 @@ struct MainTabView: View {
             if let userID = authentication.userID { community.start(userID: userID) }
             cafeViewModel.updateFavorites(authentication.favoriteCafeIDs)
             await cafeViewModel.load()
+        }
+        .onChange(of: NetworkStatus.shared.isOffline) {
+            authentication.retryUserData()
         }
         .onChange(of: authentication.favoriteCafeIDs) { _, ids in
             cafeViewModel.updateFavorites(ids)
@@ -77,6 +80,8 @@ struct MainTabView: View {
         .onChange(of: scenePhase) {
             if scenePhase == .active {
                 location.start(requestPermission: false)
+                // Metadata uses a one-shot fetch; live status/post listeners reconnect themselves.
+                Task { await cafeViewModel.load() }
             } else {
                 location.stop()
             }
@@ -96,6 +101,18 @@ struct MainTabView: View {
             }
         }
         .safeAreaInset(edge: .top) {
+            if NetworkStatus.shared.isOffline || cafeViewModel.isUsingCachedData {
+                Label(
+                    NetworkStatus.shared.isOffline
+                        ? "Offline · Showing downloaded content. Connect to save changes."
+                        : "Showing saved café data. Pull to refresh for updates.",
+                    systemImage: "wifi.slash"
+                )
+                .font(.footnote)
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.regularMaterial)
+            }
             if !authentication.isUserDataReady && authentication.userDataError == nil {
                 ProgressView("Loading your profile and favourites…")
                     .padding()

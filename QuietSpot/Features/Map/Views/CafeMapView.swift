@@ -63,6 +63,7 @@ struct CafeMapView: View {
                     MapRadiusControl()
                 }
                 .padding(16)
+                .readableContent()
                 .background(.regularMaterial)
             }
             .tabScreenTitle("Map", systemImage: "map")

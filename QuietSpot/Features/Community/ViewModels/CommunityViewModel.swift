@@ -37,7 +37,7 @@ final class CommunityViewModel {
         likedPostIDs.removeAll()
         loadedLikeIDs.removeAll()
         savingLikeIDs.removeAll()
-        insights = []
+        if self.userID != userID { insights = [] }
         self.userID = userID
         generation = UUID()
         let generation = generation

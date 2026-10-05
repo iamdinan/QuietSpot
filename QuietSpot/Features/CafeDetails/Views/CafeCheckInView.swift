@@ -39,6 +39,7 @@ struct CafeCheckInView: View {
                     }
                 }
             }
+            .readableGroupedContent()
             .disabled(viewModel.isSubmitting)
             .navigationTitle("Check in")
             .navigationBarTitleDisplayMode(.inline)
@@ -62,9 +63,10 @@ struct CafeCheckInView: View {
                             }
                         }
                     }
-                    .disabled(viewModel.isSubmitting)
+                    .disabled(NetworkStatus.shared.isOffline || viewModel.isSubmitting)
                 }
                 .padding()
+                .readableContent()
                 .background(.bar)
             }
             .tint(AppColor.accent)

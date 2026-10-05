@@ -61,6 +61,7 @@ struct EditProfileView: View {
                     }
                 }
             }
+            .readableGroupedContent()
             .navigationTitle("Edit profile")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -81,7 +82,7 @@ struct EditProfileView: View {
                             }
                         }
                     }
-                    .disabled(viewModel.trimmedName.isEmpty || viewModel.isLoadingPhoto || authentication.isBusy || !authentication.isUserDataReady || !hasChanges)
+                    .disabled(NetworkStatus.shared.isOffline || viewModel.trimmedName.isEmpty || viewModel.isLoadingPhoto || authentication.isBusy || !authentication.isUserDataReady || !hasChanges)
                 }
             }
             .disabled(authentication.isBusy)

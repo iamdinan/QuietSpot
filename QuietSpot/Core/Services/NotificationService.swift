@@ -1,3 +1,4 @@
+import OSLog
 import UserNotifications
 
 @MainActor
@@ -19,18 +20,33 @@ struct NotificationService {
 
     func sendCafeUpdate(cafe: CafeSnapshot, report: CafeCheckIn, userID: String) async throws {
         let status = await authorizationStatus()
-        guard status == .authorized || status == .provisional || status == .ephemeral else { return }
+        guard status == .authorized || status == .provisional || status == .ephemeral else {
+            Logger(subsystem: "dinan.QuietSpot", category: "CafeNotifications")
+                .notice("Café alert skipped: notification permission status \(status.rawValue)")
+            return
+        }
         try Task.checkCancellation()
-        let content = UNMutableNotificationContent()
-        content.title = "\(cafe.name) · Stats updated"
-        content.body = "Noise: \(report.noiseLevel.rawValue) · Wi-Fi: \(report.wifi) · Outlets: \(report.outlets) · Crowd: \(report.crowd)"
-        content.sound = .default
-        content.userInfo = ["cafeID": cafe.id]
+        let content = Self.cafeUpdateContent(cafe: cafe, report: report)
         let request = UNNotificationRequest(
             identifier: "cafe-update.\(userID).\(cafe.id).\(report.id)",
             content: content, trigger: nil
         )
         try await UNUserNotificationCenter.current().add(request)
+    }
+    static func cafeUpdateContent(cafe: CafeSnapshot, report: CafeCheckIn) -> UNMutableNotificationContent {
+        let content = UNMutableNotificationContent()
+        content.title = "New check-in at \(cafe.name)"
+        let noise = switch report.noiseLevel {
+        case .quiet: "quiet"
+        case .moderate: "moderately noisy"
+        case .loud: "loud"
+        }
+        let wifi = report.wifi == "Strong Wi‑Fi" ? "strong" : "spotty"
+        let outlets = report.outlets == "Outlets free" ? "outlets are available" : "all outlets are in use"
+        content.body = "It’s \(noise) and \(report.crowd.lowercased()). Wi-Fi is \(wifi), and \(outlets)."
+        content.sound = .default
+        content.userInfo = ["cafeID": cafe.id]
+        return content
     }
 }
 

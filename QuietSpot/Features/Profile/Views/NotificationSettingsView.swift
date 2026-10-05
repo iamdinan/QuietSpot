@@ -45,6 +45,7 @@ struct NotificationSettingsView: View {
                 Text("While using QuietSpot, receive noise, Wi-Fi, outlet, and crowd updates for favourite cafés within your map radius. Allow notifications here and location access in Map to receive alerts.")
             }
         }
+        .readableGroupedContent()
         .navigationTitle("Notifications")
         .navigationBarTitleDisplayMode(.inline)
         .tint(AppColor.accent)

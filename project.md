@@ -48,7 +48,8 @@ An Xcode application using Swift Package Manager dependencies does **not** need 
 ```text
 QuietSpot/
 ├── project.md
-├── Tests/                             # Standalone café notification policy regression checks
+├── QuietSpotTests/                    # Swift Testing unit-test target
+├── TESTING.md                         # Coverage, Xcode/CLI commands and manual checks
 ├── firestore-user-data.rules           # User/favorite rules fragment for console publishing
 ├── firestore-community.rules           # Community/like rules fragment for console publishing
 ├── QuietSpot.xcodeproj/
@@ -403,7 +404,7 @@ Do not use the older proposed top-level `posts` or `checkIns` paths. The code us
 - **Community posting confirmed working by the user after the crash changes.** Previously, tapping Share crashed with `EXC_BAD_ACCESS` in `swift_retain` while `CommunityService.share()` built the write dictionary. The form now captures the café ID/text/view model before starting its MainActor task, calls the view model directly instead of an intermediate async callback, and uses a reference-type `CommunityService` with an explicit write payload. The exact low-level lifetime cause was not independently proven; the user confirmed the resulting posting flow works.
 - **Profile-photo saving issue resolved**, confirmed by the user on October 5. Photos are stored in `users/{uid}.photoBase64`. The exact cause/fix was not supplied; this records the user’s confirmation rather than an independent runtime test by the coding agent.
 - Still verify likes with two accounts (one like per UID, unlike, simultaneous changes, persistence after restart), favorite account isolation, profile-name changes on another user's historical posts, and check-in propagation. Those specific runtime checks have not been independently performed by the coding agent.
-- No Xcode automated test target or Firestore emulator rule tests currently exist. Standalone notification policy checks are available in `Tests/` and run with `sh Tests/run-cafe-notification-tests.sh`; they passed on October 5. Console publishing and live device/simulator interaction remain manual steps.
+- The `QuietSpotTests` target uses Swift Testing and replaces all former standalone tests/scripts. Its 40 tests across 10 suites passed on the iPhone 17 Pro simulator on October 5, 2026. Run the shared QuietSpot scheme with ⌘U; see `TESTING.md` for component coverage, CLI usage and manual integration checks. The Debug test host skips normal app startup so tests do not restore sessions or contact Firebase. Firestore emulator rule tests are not included; console publishing and live interaction remain manual steps.
 
 ## Local café stat notifications
 
@@ -413,12 +414,12 @@ Implemented October 5, 2026 using UserNotifications and the existing Firestore c
 - `CafeViewModel.onConfirmedStatusChange` forwards the café and newest confirmed report to `CafeUpdateNotificationMonitor`; no extra Firestore subscriptions are created for notifications.
 - `CafeStatUpdateTracker` establishes a silent baseline from the first confirmed snapshot for each café. Subsequent reports must have a different ID and a newer timestamp, with at least one changed stat. Repeated snapshots, older reports, empty snapshots, and new reports with identical stats do not alert. A first report after a confirmed empty history can alert. Baselines advance even when a café is ineligible, so changing favorites, location, radius, or preferences does not replay an old update.
 - `CafeUpdateNotificationContext` requires a signed-in user, a favorite café, valid location accuracy, an enabled preference, and an exact distance within `mapRadiusKilometers`. `MainTabView` additionally requires loaded profile/favorite data and an active scene. The shared radius defaults to 5 km and uses the Map control’s 1–10 km range.
-- `MainTabView` shares location with Map, updates notification context as favorites/location/radius/preferences change, and cancels pending delivery tasks when context changes or the shell disappears. The monitor resets baselines when its user ID changes. Location startup outside Map does not prompt for permission; Map requests when-in-use access. Tracking rejects cached fixes older than five minutes when received and clears location when stopped.
+- `MainTabView` shares location with Map, updates notification context as favorites/location/radius/preferences change, and cancels pending delivery only when the café becomes ineligible, the account changes, or the shell disappears. Eligible location/context refreshes preserve pending alerts. The monitor resets baselines when its user ID changes. Location startup outside Map does not prompt for permission; Map requests when-in-use access. Tracking rejects cached fixes older than five minutes when received and clears location when stopped.
 - `NotificationService` checks current iOS notification authorization before adding an immediate local request. The title contains the café name and “Stats updated”; the body lists all four stats. Request identifiers include user, café, and report IDs; `userInfo` includes the café ID. `QuietSpotApp` installs a retained notification-center delegate requesting foreground banner, notification-list, and sound presentation. Notification-tap navigation is not implemented.
 - Enable delivery through **Profile → Settings → Notifications → Allow notifications**, keep **Café updates** enabled, and allow location through **Map**. Denied notification permission, unavailable location, disabled updates, and cafés outside the radius prevent delivery. The notification preference and radius remain device-wide `AppStorage` settings.
 - This feature detects updates while the app is active. It does not fetch or monitor fresh stats while suspended or closed. Duplicate tracking is in memory; a new signed-in shell establishes fresh silent baselines.
 
-Verification on October 5: the unsigned Debug simulator build passed, `git diff --check` was clean, and `sh Tests/run-cafe-notification-tests.sh` passed. The standalone checks cover initial/repeated/older reports, changed versus identical stats, empty history, favorites, sign-in state, enabled preferences, missing location, and radius filtering. Live Firestore-to-banner delivery has not been independently verified by the coding agent.
+Notification policies, wording and asynchronous cancellation are covered by Swift Testing suites in `QuietSpotTests`; see `TESTING.md`. Live Firestore-to-banner delivery remains a manual integration check.
 
 Manual verification:
 

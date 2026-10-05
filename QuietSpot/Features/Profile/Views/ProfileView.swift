@@ -63,7 +63,7 @@ struct ProfileView: View {
                     }
                 }
             }
-            .navigationTitle("Profile")
+            .tabScreenTitle("Profile", systemImage: "person")
             .sheet(isPresented: $showsEditProfile) {
                 EditProfileView(profile: $profile)
             }

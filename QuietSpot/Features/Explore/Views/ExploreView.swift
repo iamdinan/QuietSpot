@@ -36,7 +36,7 @@ struct ExploreView: View {
                 }
             }
             .background(Color(uiColor: .systemGroupedBackground))
-            .navigationTitle("Explore")
+            .tabScreenTitle("Explore", systemImage: "magnifyingglass")
             .searchable(text: $searchText, prompt: "Search cafés or areas")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

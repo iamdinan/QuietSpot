@@ -13,6 +13,7 @@ struct QuietSpotApp: App {
     init() {
         // Remove the legacy override for users upgrading to system appearance.
         UserDefaults.standard.removeObject(forKey: "appearanceMode")
+        _ = NetworkStatus.shared
         NotificationService().configurePresentation()
         QuietSpotShortcuts.updateAppShortcutParameters()
     }

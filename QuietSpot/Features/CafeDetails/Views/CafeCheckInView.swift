@@ -62,7 +62,7 @@ struct CafeCheckInView: View {
                             }
                         }
                     }
-                    .disabled(viewModel.isSubmitting)
+                    .disabled(NetworkStatus.shared.isOffline || viewModel.isSubmitting)
                 }
                 .padding()
                 .background(.bar)

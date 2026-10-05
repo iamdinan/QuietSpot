@@ -6,6 +6,7 @@ import Foundation
 @MainActor
 struct CafeCheckInService {
     func submit(cafeID: String, noise: NoiseLevel, wifi: String, outlets: String, crowd: String) async throws {
+        try NetworkStatus.shared.requireConnection()
         guard FirebaseApp.app() != nil else {
             throw NSError(domain: "CafeCheckIn", code: 2, userInfo: [
                 NSLocalizedDescriptionKey: "Firebase is not configured. Run the app before submitting a check-in."
@@ -46,7 +47,13 @@ struct CafeCheckInService {
                     // Don't display an unconfirmed local check-in as a saved report.
                     guard let snapshot, !snapshot.metadata.hasPendingWrites else { return }
                     // An empty cache doesn't prove the server has no check-ins.
-                    if snapshot.metadata.isFromCache && snapshot.documents.isEmpty { return }
+                    if !OfflineQueryCache().canUseSnapshot(
+                        key: "checkIns/" + cafeID, isFromCache: snapshot.metadata.isFromCache,
+                        isEmpty: snapshot.documents.isEmpty
+                    ) {
+                        if NetworkStatus.shared.isOffline { onChange(.failure(OfflineBrowsingError.noCachedData)) }
+                        return
+                    }
                     do {
                         let checkIns = try snapshot.documents.map { document in
                             let report = try document.data(as: CafeCheckInDocument.self)

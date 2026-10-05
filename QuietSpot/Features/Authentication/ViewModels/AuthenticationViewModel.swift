@@ -156,42 +156,42 @@ final class AuthenticationViewModel {
         hasLoadedProfile = false
         hasLoadedFavorites = false
         userDataError = nil
+        profileListener = userData.observeProfile(userID: userID) { [weak self] result in
+            guard let self, generation == self.userDataGeneration else { return }
+            switch result {
+            case .success(let profile):
+                self.profile = profile
+                self.hasLoadedProfile = true
+                self.isUserDataReady = self.hasLoadedFavorites
+                if self.isUserDataReady { self.userDataError = nil }
+            case .failure(let error):
+                self.hasLoadedProfile = false
+                self.isUserDataReady = false
+                self.userDataError = "Couldn’t load your profile. \(error.localizedDescription)"
+            }
+        }
+        favoritesListener = userData.observeFavorites(userID: userID) { [weak self] result in
+            guard let self, generation == self.userDataGeneration else { return }
+            switch result {
+            case .success(let ids):
+                self.favoriteCafeIDs = ids
+                self.hasLoadedFavorites = true
+                self.isUserDataReady = self.hasLoadedProfile
+                if self.isUserDataReady { self.userDataError = nil }
+            case .failure(let error):
+                self.isUserDataReady = false
+                self.hasLoadedFavorites = false
+                self.userDataError = "Couldn’t load your favourites. \(error.localizedDescription)"
+            }
+        }
+        // Transactions require a server. Cached profile/favourites remain usable if this fails.
         userDataTask = Task { [weak self] in
-            guard let self else { return }
+            guard let self, !NetworkStatus.shared.isOffline else { return }
             do {
                 try await userData.createProfileIfNeeded(userID: userID, displayName: defaultName)
-                guard !Task.isCancelled, generation == userDataGeneration else { return }
-                profileListener = userData.observeProfile(userID: userID) { [weak self] result in
-                    guard let self, generation == self.userDataGeneration else { return }
-                    switch result {
-                    case .success(let profile):
-                        self.profile = profile
-                        self.hasLoadedProfile = true
-                        self.isUserDataReady = self.hasLoadedFavorites
-                        if self.isUserDataReady { self.userDataError = nil }
-                    case .failure(let error):
-                        self.hasLoadedProfile = false
-                        self.isUserDataReady = false
-                        self.userDataError = "Couldn’t load your profile. \(error.localizedDescription)"
-                    }
-                }
-                favoritesListener = userData.observeFavorites(userID: userID) { [weak self] result in
-                    guard let self, generation == self.userDataGeneration else { return }
-                    switch result {
-                    case .success(let ids):
-                        self.favoriteCafeIDs = ids
-                        self.hasLoadedFavorites = true
-                        self.isUserDataReady = self.hasLoadedProfile
-                        if self.isUserDataReady { self.userDataError = nil }
-                    case .failure(let error):
-                        self.isUserDataReady = false
-                        self.hasLoadedFavorites = false
-                        self.userDataError = "Couldn’t load your favourites. \(error.localizedDescription)"
-                    }
-                }
             } catch {
-                guard !Task.isCancelled, generation == userDataGeneration else { return }
-                userDataError = "Couldn’t load your account data. \(error.localizedDescription)"
+                guard !Task.isCancelled, generation == userDataGeneration, !hasLoadedProfile else { return }
+                userDataError = "Couldn’t prepare your profile. \(error.localizedDescription)"
             }
         }
     }

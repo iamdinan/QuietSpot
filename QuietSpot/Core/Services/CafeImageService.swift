@@ -29,7 +29,7 @@ final class CafeImageService {
         guard FirebaseApp.app() != nil else { throw ImageError.notConfigured }
         let document = try await Firestore.firestore()
             .collection("cafeImages").document(cafeID)
-            .getDocument(source: .server)
+            .getDocument(source: NetworkStatus.shared.isOffline ? .cache : .default)
         guard document.exists else { throw ImageError.missingDocument }
         let record = try document.data(as: ImageDocument.self)
         let base64 = record.imageBase64.filter { !$0.isWhitespace }

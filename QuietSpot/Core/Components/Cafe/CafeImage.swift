@@ -54,8 +54,8 @@ struct CafeImage: View {
             .clipped()
         }
         .accessibilityElement(children: .contain)
-        .task(id: cafe.id) {
-            if loadsCafeImages { await viewModel.load(cafeID: cafe.id) }
+        .task(id: "\(cafe.id)-\(NetworkStatus.shared.isOffline)") {
+            if loadsCafeImages && viewModel.image == nil { await viewModel.load(cafeID: cafe.id) }
         }
     }
 }

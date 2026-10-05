@@ -52,7 +52,7 @@ struct CafeInsightFeed: View {
                     if let cafe = cafes.first(where: { $0.id == insight.cafeID }) {
                         CafeInsightCard(insight: insight, cafe: cafe, profile: profile, onToggleLike: {
                             Task { await community.toggleLike(insight) }
-                        }, isLikeEnabled: community.loadedLikeIDs.contains(insight.id) && !community.savingLikeIDs.contains(insight.id))
+                        }, isLikeEnabled: !NetworkStatus.shared.isOffline && community.loadedLikeIDs.contains(insight.id) && !community.savingLikeIDs.contains(insight.id))
                     }
                 }
             }

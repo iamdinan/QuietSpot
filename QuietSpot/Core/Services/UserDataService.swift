@@ -8,6 +8,7 @@ struct UserDataService {
     }
 
     func createProfileIfNeeded(userID: String, displayName: String) async throws {
+        try NetworkStatus.shared.requireConnection()
         let reference = user(userID)
         _ = try await Firestore.firestore().runTransaction { transaction, errorPointer in
             do {
@@ -32,7 +33,13 @@ struct UserDataService {
             Task { @MainActor in
                 if let error { onChange(.failure(error)); return }
                 guard let snapshot, !snapshot.metadata.hasPendingWrites else { return }
-                if !snapshot.exists && snapshot.metadata.isFromCache { return }
+                if !snapshot.exists {
+                    if snapshot.metadata.isFromCache && NetworkStatus.shared.isOffline {
+                        onChange(.failure(OfflineBrowsingError.noCachedData))
+                    }
+                    // Profile creation runs independently; wait for its server snapshot.
+                    return
+                }
                 do {
                     guard let name = snapshot.get("displayName") as? String,
                           let encoded = snapshot.get("photoBase64") as? String else {
@@ -47,6 +54,7 @@ struct UserDataService {
     }
 
     func saveProfile(userID: String, displayName: String, photoData: Data?) async throws {
+        try NetworkStatus.shared.requireConnection()
         guard !displayName.isEmpty, displayName.count <= 100 else {
             throw NSError(domain: "UserData", code: 2, userInfo: [
                 NSLocalizedDescriptionKey: "Use a display name between 1 and 100 characters."
@@ -70,13 +78,20 @@ struct UserDataService {
             Task { @MainActor in
                 if let error { onChange(.failure(error)); return }
                 guard let snapshot, !snapshot.metadata.hasPendingWrites else { return }
-                if snapshot.metadata.isFromCache && snapshot.documents.isEmpty { return }
+                if !OfflineQueryCache().canUseSnapshot(
+                    key: "favorites/" + userID, isFromCache: snapshot.metadata.isFromCache,
+                    isEmpty: snapshot.documents.isEmpty
+                ) {
+                    if NetworkStatus.shared.isOffline { onChange(.failure(OfflineBrowsingError.noCachedData)) }
+                    return
+                }
                 onChange(.success(Set(snapshot.documents.map(\.documentID))))
             }
         }
     }
 
     func setFavorite(userID: String, cafeID: String, enabled: Bool) async throws {
+        try NetworkStatus.shared.requireConnection()
         let reference = user(userID).collection("favorites").document(cafeID)
         if enabled {
             try await reference.setData(["createdAt": FieldValue.serverTimestamp()])

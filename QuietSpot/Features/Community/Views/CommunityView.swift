@@ -24,7 +24,7 @@ struct CommunityView: View {
                     Button("Share an insight", systemImage: "square.and.pencil") {
                         isComposing = true
                     }
-                    .disabled(favorites.isEmpty || !authentication.isUserDataReady)
+                    .disabled(NetworkStatus.shared.isOffline || favorites.isEmpty || !authentication.isUserDataReady)
                 }
             }
             .sheet(isPresented: $isComposing) {

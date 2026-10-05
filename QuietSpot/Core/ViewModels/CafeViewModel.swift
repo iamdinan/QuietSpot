@@ -7,6 +7,7 @@ import Observation
 final class CafeViewModel {
     var cafes: [CafeSnapshot] = []
     private(set) var isLoading = false
+    private(set) var isUsingCachedData = false
     private var loadingError: String?
     private var statusErrors: [String: String] = [:]
     var errorMessage: String? { loadingError ?? statusErrors.sorted { $0.key < $1.key }.first?.value }
@@ -33,8 +34,9 @@ final class CafeViewModel {
         defer { isLoading = false }
 
         do {
-            let documents = try await service.fetchCafes()
-            cafes = try documents.map { document in
+            let result = try await service.fetchCafes()
+            isUsingCachedData = result.isFromCache
+            cafes = try result.cafes.map { document in
                 guard let id = document.id else {
                     throw CocoaError(.coderReadCorrupt)
                 }

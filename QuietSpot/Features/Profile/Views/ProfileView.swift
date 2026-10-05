@@ -27,6 +27,7 @@ struct ProfileView: View {
                         Button("Edit profile") {
                             showsEditProfile = true
                         }
+                        .disabled(NetworkStatus.shared.isOffline)
                         .buttonStyle(.borderless)
                         .frame(minHeight: 44)
                     }

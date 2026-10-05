@@ -38,7 +38,7 @@ struct CafeDetailsView: View {
                             .frame(width: 44, height: 44)
                     }
                     .buttonStyle(.plain)
-                    .disabled(!authentication.isUserDataReady || authentication.savingFavoriteIDs.contains(cafe.id))
+                    .disabled(NetworkStatus.shared.isOffline || !authentication.isUserDataReady || authentication.savingFavoriteIDs.contains(cafe.id))
                     .accessibilityLabel(cafe.isFavorite ? "Remove from favorites" : "Add to favorites")
                     .accessibilityValue(cafe.isFavorite ? "Saved" : "Not saved")
                     .accessibilityAddTraits(cafe.isFavorite ? [.isSelected] : [])
@@ -84,6 +84,7 @@ struct CafeDetailsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {
             PrimaryButton("Check in here") { showsCheckIn = true }
+                .disabled(NetworkStatus.shared.isOffline)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .background(.bar)
@@ -106,7 +107,7 @@ struct CafeDetailsView: View {
     }
 
     private var checkInSummary: String {
-        if cafe.statusErrorMessage != nil { return "Recent check-ins are unavailable. Try refreshing Home." }
+        if let error = cafe.statusErrorMessage { return error }
         if cafe.isLoadingStatus { return "Loading recent check-ins…" }
         return cafe.recentCheckIns.isEmpty
             ? "No check-ins yet. Be the first to share the conditions here."

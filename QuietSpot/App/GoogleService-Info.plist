@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyDAgfk5f6epH4OwixyB0VTltjC-JfU5vJM</string>
+	<key>GCM_SENDER_ID</key>
+	<string>573274670803</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>dinan.QuietSpot</string>
+	<key>PROJECT_ID</key>
+	<string>quietspot-a0221</string>
+	<key>STORAGE_BUCKET</key>
+	<string>quietspot-a0221.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:573274670803:ios:351fbd1b8593407ea97626</string>
+</dict>
+</plist>

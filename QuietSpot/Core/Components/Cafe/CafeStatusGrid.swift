@@ -1,0 +1,124 @@
+import SwiftUI
+
+struct CafeStatusGrid: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    private let noiseLevel: NoiseLevel?
+    private let wifi: String?
+    private let outlets: String?
+    private let crowd: String?
+    private let isLoading: Bool
+    private let statusError: String?
+
+    init(cafe: CafeSnapshot) {
+        noiseLevel = cafe.noiseLevel
+        wifi = cafe.wifi
+        outlets = cafe.outlets
+        crowd = cafe.crowd
+        isLoading = cafe.isLoadingStatus
+        statusError = cafe.statusErrorMessage
+    }
+
+    init(checkIn: CafeCheckIn) {
+        noiseLevel = checkIn.noiseLevel
+        wifi = checkIn.wifi
+        outlets = checkIn.outlets
+        crowd = checkIn.crowd
+        isLoading = false
+        statusError = nil
+    }
+
+    var body: some View {
+        if let statusError {
+            Label("Status unavailable", systemImage: "exclamationmark.triangle")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .accessibilityHint(statusError)
+        } else if isLoading {
+            ProgressView("Loading café status…")
+                .font(.subheadline)
+        } else if let noiseLevel, let wifi, let outlets, let crowd {
+            LazyVGrid(
+                columns: dynamicTypeSize.isAccessibilitySize
+                    ? [GridItem(.flexible(), alignment: .leading)]
+                    : [GridItem(.flexible(), alignment: .leading), GridItem(.flexible(), alignment: .leading)],
+                alignment: .leading,
+                spacing: 8
+            ) {
+                CompactStatusPill(
+                    title: noiseLevel.rawValue,
+                    icon: "speaker.wave.2",
+                    tint: noiseLevel.tint,
+                    accessibilityLabel: "Noise: \(noiseLevel.rawValue)"
+                )
+                CompactStatusPill(
+                    title: wifi,
+                    icon: "wifi",
+                    tint: wifi == "Strong Wi‑Fi" ? AppColor.positive : AppColor.negative,
+                    accessibilityLabel: "Wi-Fi: \(wifi == "Strong Wi‑Fi" ? "Strong" : "Spotty")"
+                )
+                CompactStatusPill(
+                    title: outlets,
+                    icon: "powerplug",
+                    tint: outlets == "Outlets free" ? AppColor.positive : AppColor.negative,
+                    accessibilityLabel: "Outlets: \(outlets == "Outlets free" ? "Available" : "Full")"
+                )
+                CompactStatusPill(
+                    title: crowd,
+                    icon: "person.2",
+                    tint: crowd == "Uncrowded" ? AppColor.positive : AppColor.negative,
+                    accessibilityLabel: "Crowd: \(crowd)"
+                )
+            }
+        } else {
+            Label("No check-ins yet", systemImage: "clock")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+    }
+}
+
+private struct CompactStatusPill: View {
+    let title: String
+    let icon: String
+    let tint: Color
+    var accessibilityLabel: String?
+
+    var body: some View {
+        Label(title, systemImage: icon)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(tint)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(tint.opacity(0.12), in: Capsule())
+            .accessibilityLabel(accessibilityLabel ?? title)
+    }
+}
+
+private extension NoiseLevel {
+    var tint: Color {
+        switch self {
+        case .quiet: AppColor.positive
+        case .moderate: AppColor.moderate
+        case .loud: AppColor.negative
+        }
+    }
+}
+
+#Preview("Light") {
+    CafeStatusGrid(checkIn: CafeCheckIn(
+        time: "Just now", noiseLevel: .quiet,
+        wifi: "Strong Wi‑Fi", outlets: "Outlets free", crowd: "Uncrowded"
+    ))
+        .padding()
+}
+
+#Preview("Dark") {
+    CafeStatusGrid(checkIn: CafeCheckIn(
+        time: "Just now", noiseLevel: .loud,
+        wifi: "Spotty Wi‑Fi", outlets: "Outlets full", crowd: "Crowded"
+    ))
+        .padding()
+        .preferredColorScheme(.dark)
+}

@@ -2,18 +2,11 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(AuthenticationViewModel.self) private var authentication
-    @AppStorage("appearanceMode") private var appearanceMode = AppAppearance.system.rawValue
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         Form {
             Section("Preferences") {
-                Picker("Appearance", selection: $appearanceMode) {
-                    ForEach(AppAppearance.allCases, id: \.rawValue) { appearance in
-                        Text(appearance.title).tag(appearance.rawValue)
-                    }
-                }
-
                 NavigationLink {
                     NotificationSettingsView()
                 } label: {

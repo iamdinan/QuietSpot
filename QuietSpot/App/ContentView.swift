@@ -10,11 +10,6 @@ import SwiftUI
 struct ContentView: View {
     @State private var navigationPath = NavigationPath()
     @State private var authentication = AuthenticationViewModel()
-    @AppStorage("appearanceMode") private var appearanceMode = AppAppearance.system.rawValue
-
-    private var selectedAppearance: AppAppearance {
-        AppAppearance(rawValue: appearanceMode) ?? .system
-    }
 
     var body: some View {
         @Bindable var authentication = authentication
@@ -31,9 +26,6 @@ struct ContentView: View {
                     WelcomeView(
                         onSignIn: {
                             navigationPath.append(AppRoute.signIn)
-                        },
-                        onToggleAppearance: {
-                            appearanceMode = selectedAppearance.toggled.rawValue
                         }
                     )
                     .navigationDestination(for: AppRoute.self) { route in
@@ -69,7 +61,6 @@ struct ContentView: View {
         } message: {
             Text(authentication.errorMessage ?? "")
         }
-        .preferredColorScheme(selectedAppearance.colorScheme)
     }
 }
 

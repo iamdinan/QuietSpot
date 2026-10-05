@@ -22,8 +22,15 @@ struct NotificationService {
         guard status == .authorized || status == .provisional || status == .ephemeral else { return }
         try Task.checkCancellation()
         let content = UNMutableNotificationContent()
-        content.title = "\(cafe.name) · Stats updated"
-        content.body = "Noise: \(report.noiseLevel.rawValue) · Wi-Fi: \(report.wifi) · Outlets: \(report.outlets) · Crowd: \(report.crowd)"
+        content.title = "New check-in at \(cafe.name)"
+        let noise = switch report.noiseLevel {
+        case .quiet: "quiet"
+        case .moderate: "moderately noisy"
+        case .loud: "loud"
+        }
+        let wifi = report.wifi == "Strong Wi‑Fi" ? "strong" : "spotty"
+        let outlets = report.outlets == "Outlets free" ? "outlets are available" : "all outlets are in use"
+        content.body = "It’s \(noise) and \(report.crowd.lowercased()). Wi-Fi is \(wifi), and \(outlets)."
         content.sound = .default
         content.userInfo = ["cafeID": cafe.id]
         let request = UNNotificationRequest(

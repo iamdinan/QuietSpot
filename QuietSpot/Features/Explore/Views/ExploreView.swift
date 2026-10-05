@@ -30,8 +30,7 @@ struct ExploreView: View {
                             CafePager(cafes: filteredCafes, pageSize: 5, accessibilityContext: "Explore cafés")
                         }
                         .padding(20)
-                        .frame(maxWidth: 680)
-                        .frame(maxWidth: .infinity)
+                        .readableContent()
                     }
                 }
             }

@@ -64,6 +64,7 @@ struct CreateAccountView: View {
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 32)
+            .readableContent(maxWidth: 520)
         }
         .scrollDismissesKeyboard(.interactively)
         .disabled(authentication.isBusy)

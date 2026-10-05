@@ -42,6 +42,7 @@ struct SettingsView: View {
                 }
             }
         }
+        .readableGroupedContent()
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { authentication.refreshFaceID() }
@@ -67,6 +68,7 @@ private struct AboutQuietSpotView: View {
                 .padding(.vertical, 4)
             }
         }
+        .readableGroupedContent()
         .navigationTitle("About QuietSpot")
         .navigationBarTitleDisplayMode(.inline)
     }

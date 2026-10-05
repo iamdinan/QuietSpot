@@ -61,6 +61,7 @@ struct EditProfileView: View {
                     }
                 }
             }
+            .readableGroupedContent()
             .navigationTitle("Edit profile")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

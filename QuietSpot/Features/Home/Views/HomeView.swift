@@ -34,8 +34,7 @@ struct HomeView: View {
                     }
                 }
                 .padding(20)
-                .frame(maxWidth: 680)
-                .frame(maxWidth: .infinity)
+                .readableContent()
             }
             .background(Color(uiColor: .systemGroupedBackground))
             .refreshable { await onRefresh?() }

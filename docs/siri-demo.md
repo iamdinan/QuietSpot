@@ -16,3 +16,13 @@ QuietSpot uses App Intents and App Shortcuts to expose **Check Favourite Café S
 ## Verification
 
 Run `sh Tests/run-siri-response-tests.sh` to check the response text, all four stats, timestamp ageing, and fallback states. Building the app also validates App Intent and App Shortcut metadata. Siri phrase recognition and spoken delivery require a manual device/simulator test; a successful build does not verify those interactions.
+
+## Latest community post
+
+The second action, **Read Latest Community Post**, returns the latest saved post's text, author, café name, and age. Its Siri phrase is **“Read the latest community post in QuietSpot.”** Run **Latest Post** under QuietSpot's App Shortcuts without speaking, or create a shortcut with **Read Latest Community Post → Show Result**.
+
+To demo it, run QuietSpot, sign in, and wait for the Community feed to load. Run the shortcut and compare its response with the newest post. Publish another post, let the feed update, and run it again. Sign out and confirm the action asks you to sign in rather than reading the previous saved post.
+
+The latest post is saved in the app's local preferences as an encoded snapshot, independently of the widget. Feed, author-name, and café-name changes update it; account changes replace it with a signed-out or loading state that contains no post text. The intent runs in the app process, requires device authentication, and returns the last synced content without fetching Firebase data. Missing café metadata uses “a café”; an author profile still loading uses the feed's “Café member” fallback. Loading, errors, and an empty feed return guidance.
+
+Run `sh Tests/run-community-siri-tests.sh` to check newest-post selection, report age, snapshot encoding, author-name changes, and fallback states. Spoken Siri delivery and live feed-to-shortcut syncing still need manual verification.

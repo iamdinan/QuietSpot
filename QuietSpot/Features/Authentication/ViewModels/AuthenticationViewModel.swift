@@ -211,8 +211,9 @@ final class AuthenticationViewModel {
         let previousUserID = userID
         userID = user?.userID
         if previousUserID != userID || userID == nil {
-            // Clear the previous account's favourites before loading another account.
+            // Clear the previous account's widget and Siri data before loading another account.
             PulseWidgetPublisher.publish(PulseWidgetContent(state: userID == nil ? .signedOut : .loading))
+            CommunityPostSiriSnapshot(state: userID == nil ? .signedOut : .loading).save()
         }
         email = user?.email
         refreshFaceID()

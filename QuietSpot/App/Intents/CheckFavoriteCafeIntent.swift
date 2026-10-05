@@ -25,5 +25,11 @@ struct QuietSpotShortcuts: AppShortcutsProvider {
             shortTitle: "Café Stats",
             systemImageName: "cup.and.saucer.fill"
         )
+        AppShortcut(
+            intent: ReadLatestCommunityPostIntent(),
+            phrases: ["Read the latest community post in \(.applicationName)"],
+            shortTitle: "Latest Post",
+            systemImageName: "text.bubble"
+        )
     }
 }

@@ -7,7 +7,7 @@ xcrun swiftc -module-cache-path "$test_dir/module-cache" \
     QuietSpot/Core/Models/CafeInsight.swift \
     QuietSpot/Core/Models/CafeSnapshot.swift \
     QuietSpot/Core/Models/CafeCheckIn.swift \
-    QuietSpot/Core/Models/CafeCheckInTimeFormatter.swift \
+    Shared/CafeCheckInTimeFormatter.swift \
     QuietSpot/Core/Services/CommunityPostSiriSnapshot.swift \
     Tests/CommunityPostSiriTests.swift \
     -o "$test_dir/community-siri-tests"

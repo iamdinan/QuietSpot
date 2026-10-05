@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2B6F58C4B90C4B849F97FE47 /* QuietSpot/Core/Models/CafeCheckInTimeFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4427ADE11A7649A9B058DC62 /* QuietSpot/Core/Models/CafeCheckInTimeFormatter.swift */; };
 		6E114CC5B7274E80B4AD993E /* QuietSpotWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 11904E7CC11F4882A48B5486 /* QuietSpotWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A17E0001306E214600000001 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A17E0003306E214600000001 /* FirebaseCore */; };
 		A17E0002306E214600000001 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A17E0004306E214600000001 /* FirebaseAuth */; };
@@ -40,7 +39,6 @@
 
 /* Begin PBXFileReference section */
 		11904E7CC11F4882A48B5486 /* QuietSpotWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QuietSpotWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		4427ADE11A7649A9B058DC62 /* QuietSpot/Core/Models/CafeCheckInTimeFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuietSpot/Core/Models/CafeCheckInTimeFormatter.swift; sourceTree = "<group>"; };
 		E7248079306E2146008FCF77 /* QuietSpot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuietSpot.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -95,7 +93,6 @@
 				16C7A5F8B57F4E1AABA0B96E /* QuietSpotWidgets */,
 				303AF0CFBBEF443FB89B65C7 /* Shared */,
 				C3CA60E295124B2DBCD4B896 /* Config */,
-				4427ADE11A7649A9B058DC62 /* QuietSpot/Core/Models/CafeCheckInTimeFormatter.swift */,
 				E724807A306E2146008FCF77 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -226,7 +223,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2B6F58C4B90C4B849F97FE47 /* QuietSpot/Core/Models/CafeCheckInTimeFormatter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

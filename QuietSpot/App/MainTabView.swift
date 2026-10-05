@@ -50,6 +50,9 @@ struct MainTabView: View {
         .onChange(of: widgetContent, initial: true) { _, content in
             PulseWidgetPublisher.publish(content)
         }
+        .onChange(of: communitySiriSnapshot, initial: true) { _, snapshot in
+            snapshot.save()
+        }
         .task {
             refreshNotificationContext()
             cafeViewModel.onConfirmedStatusChange = { [cafeNotifications] cafe, report in
@@ -139,6 +142,15 @@ struct MainTabView: View {
             return PulseWidgetContent(state: cafeViewModel.errorMessage == nil ? .loading : .unavailable)
         }
         return PulseWidgetPublisher.content(cafes: cafeViewModel.cafes)
+    }
+
+    private var communitySiriSnapshot: CommunityPostSiriSnapshot {
+        guard authentication.userID != nil else { return CommunityPostSiriSnapshot(state: .signedOut) }
+        guard authentication.isUserDataReady else { return CommunityPostSiriSnapshot(state: .loading) }
+        return CommunityPostSiriSnapshot.content(
+            posts: community.insights, cafes: cafeViewModel.cafes,
+            isLoading: community.isLoading, hasError: community.loadingError != nil
+        )
     }
 }
 

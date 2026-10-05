@@ -33,15 +33,17 @@ struct WelcomeView: View {
                     }
                     .padding(.top, 28)
                     .padding(.horizontal, 24)
+                    .readableContent()
 
                     Spacer(minLength: 32)
 
                     PrimaryButton("Sign in to continue", action: onSignIn)
                         .padding(.horizontal, 24)
                         .padding(.bottom, 24)
+                        .readableContent()
                 }
                 .frame(minHeight: proxy.size.height, alignment: .top)
-                .readableContent()
+                .frame(maxWidth: .infinity)
             }
             .scrollIndicators(.hidden)
         }

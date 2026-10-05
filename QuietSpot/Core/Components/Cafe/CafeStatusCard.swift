@@ -11,7 +11,7 @@ struct CafeStatusCard: View {
             if style == .photo {
                 // A bounded container gives every source image the same crop.
                 Color.clear
-                    .frame(height: 140)
+                    .aspectRatio(3.0 / 2.0, contentMode: .fit)
                     .overlay {
                         CafeImage(cafe: cafe)
                     }

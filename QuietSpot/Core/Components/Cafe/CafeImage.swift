@@ -24,6 +24,12 @@ struct CafeImage: View {
                                             .foregroundStyle(.secondary)
                                     }
                                     if allowsRetry {
+                                        Text(error)
+                                            .font(.caption2)
+                                            .foregroundStyle(.secondary)
+                                            .multilineTextAlignment(.center)
+                                            .lineLimit(3)
+                                            .padding(.horizontal, 12)
                                         Button {
                                             Task { await viewModel.load(cafeID: cafe.id) }
                                         } label: {
@@ -55,7 +61,7 @@ struct CafeImage: View {
         }
         .accessibilityElement(children: .contain)
         .task(id: "\(cafe.id)-\(NetworkStatus.shared.isOffline)") {
-            if loadsCafeImages && viewModel.image == nil { await viewModel.load(cafeID: cafe.id) }
+            if loadsCafeImages { await viewModel.load(cafeID: cafe.id) }
         }
     }
 }

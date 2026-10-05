@@ -11,11 +11,11 @@ struct AccessibilitySettingsView: View {
             } header: {
                 Text("Screen reader")
             } footer: {
-                Text("QuietSpot follows your iPhone’s VoiceOver setting automatically. No separate app switch is needed.")
+                Text("QuietSpot follows your device’s VoiceOver setting automatically. No separate app switch is needed.")
             }
 
             Section("Turn on VoiceOver") {
-                Text("Open iPhone Settings, choose Accessibility, then VoiceOver, and turn it on.")
+                Text("Open Settings, choose Accessibility, then VoiceOver, and turn it on.")
                 Text("You can also ask Siri to turn VoiceOver on or off.")
             }
 
@@ -30,6 +30,7 @@ struct AccessibilitySettingsView: View {
                     .accessibilityHint("Opens Apple Support in your browser")
             }
         }
+        .readableGroupedContent()
         .navigationTitle("Accessibility")
         .navigationBarTitleDisplayMode(.inline)
     }

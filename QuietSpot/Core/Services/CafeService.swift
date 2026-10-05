@@ -13,7 +13,9 @@ struct CafeService {
         }
         let snapshot = try await Firestore.firestore()
             .collection("cafes")
-            .getDocuments(source: NetworkStatus.shared.isOffline ? .cache : .default)
+            // Online refreshes must confirm the current collection, including deletions.
+            // The default source can silently fall back to stale local records.
+            .getDocuments(source: NetworkStatus.shared.isOffline ? .cache : .server)
 
         guard OfflineQueryCache().canUseSnapshot(
             key: "cafes", isFromCache: snapshot.metadata.isFromCache,

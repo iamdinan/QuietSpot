@@ -76,8 +76,7 @@ struct CafeDetailsView: View {
                 }
             }
             .padding(20)
-            .frame(maxWidth: 680)
-            .frame(maxWidth: .infinity)
+            .readableContent()
         }
         .background(Color(uiColor: .systemGroupedBackground))
         .navigationTitle("Café details")
@@ -87,6 +86,7 @@ struct CafeDetailsView: View {
                 .disabled(NetworkStatus.shared.isOffline)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
+                .readableContent()
                 .background(.bar)
         }
         .sheet(isPresented: $showsCheckIn, onDismiss: {
@@ -98,6 +98,7 @@ struct CafeDetailsView: View {
             CafeCheckInView(cafe: cafe) {
                 didSubmitCheckIn = true
             }
+            .presentationSizing(.form)
         }
         .alert("Check-in saved", isPresented: $showsConfirmation) {
             Button("Done", role: .cancel) {}

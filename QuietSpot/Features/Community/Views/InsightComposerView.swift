@@ -66,6 +66,7 @@ struct InsightComposerView: View {
                     }
                 }
             }
+            .readableGroupedContent()
             .disabled(isSharing)
             .overlay {
                 if isSharing {

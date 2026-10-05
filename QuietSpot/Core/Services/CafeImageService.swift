@@ -30,7 +30,7 @@ final class CafeImageService {
         let document = try await Firestore.firestore()
             .collection("cafeImages").document(cafeID)
             .getDocument(source: NetworkStatus.shared.isOffline ? .cache : .default)
-        guard document.exists else { throw ImageError.missingDocument }
+        guard document.exists else { throw ImageError.missingDocument(cafeID) }
         let record = try document.data(as: ImageDocument.self)
         let base64 = record.imageBase64.filter { !$0.isWhitespace }
         guard let data = Data(base64Encoded: base64),
@@ -46,12 +46,13 @@ final class CafeImageService {
     }
 
     private enum ImageError: LocalizedError {
-        case notConfigured, missingDocument, invalidImage
+        case notConfigured, invalidImage
+        case missingDocument(String)
 
         var errorDescription: String? {
             switch self {
             case .notConfigured: "Firebase is not configured."
-            case .missingDocument: "No image document exists with this café’s document ID."
+            case .missingDocument(let cafeID): "No image document exists at cafeImages/\(cafeID)."
             case .invalidImage: "The imageBase64 field does not contain a valid encoded image."
             }
         }

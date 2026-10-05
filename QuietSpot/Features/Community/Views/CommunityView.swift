@@ -29,6 +29,7 @@ struct CommunityView: View {
             }
             .sheet(isPresented: $isComposing) {
                 InsightComposerView(favorites: favorites)
+                    .presentationSizing(.form)
             }
         }
     }

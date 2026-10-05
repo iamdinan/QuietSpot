@@ -57,6 +57,7 @@ struct CafeInsightFeed: View {
                 }
             }
             .padding()
+            .readableContent()
         }
         .background(Color(uiColor: .systemGroupedBackground))
         .alert("Community update", isPresented: Binding(

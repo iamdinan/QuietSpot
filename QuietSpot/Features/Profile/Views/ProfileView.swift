@@ -64,9 +64,11 @@ struct ProfileView: View {
                     }
                 }
             }
+            .readableGroupedContent()
             .tabScreenTitle("Profile", systemImage: "person")
             .sheet(isPresented: $showsEditProfile) {
                 EditProfileView(profile: $profile)
+                    .presentationSizing(.form)
             }
             .confirmationDialog("Sign out of QuietSpot?", isPresented: $showsSignOutConfirmation, titleVisibility: .visible) {
                 Button("Sign out", role: .destructive, action: onSignOut)

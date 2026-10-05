@@ -33,13 +33,17 @@ struct WelcomeView: View {
                     }
                     .padding(.top, 28)
                     .padding(.horizontal, 24)
+                    .readableContent()
 
                     Spacer(minLength: 32)
 
                     PrimaryButton("Sign in to continue", action: onSignIn)
                         .padding(.horizontal, 24)
+                        .padding(.bottom, 24)
+                        .readableContent()
                 }
                 .frame(minHeight: proxy.size.height, alignment: .top)
+                .frame(maxWidth: .infinity)
             }
             .scrollIndicators(.hidden)
         }
@@ -48,11 +52,13 @@ struct WelcomeView: View {
     }
 
     private func heroImage(height: CGFloat) -> some View {
-        Image("CafeHero")
-            .resizable()
-            .scaledToFill()
-            .frame(maxWidth: .infinity)
+        Color.clear
             .frame(height: height)
+            .overlay {
+                Image("CafeHero")
+                    .resizable()
+                    .scaledToFill()
+            }
             .overlay(AppColor.heroOverlay)
             .clipped()
             .accessibilityLabel("A sunlit, quiet café interior with a cup of coffee")

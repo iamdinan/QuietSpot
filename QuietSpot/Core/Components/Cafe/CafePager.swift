@@ -3,6 +3,8 @@ import SwiftUI
 struct CafePager: View {
     let cafes: [CafeSnapshot]
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedPage = 0
     private let pageSize: Int
     private let accessibilityContext: String
@@ -23,11 +25,18 @@ struct CafePager: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            ForEach(visibleCafes) { cafe in
-                NavigationLink(value: cafe.id) {
-                    CafeStatusCard(cafe: cafe)
+            LazyVGrid(
+                columns: horizontalSizeClass != .regular || dynamicTypeSize.isAccessibilitySize
+                    ? [GridItem(.flexible(), alignment: .top)]
+                    : [GridItem(.adaptive(minimum: 300), spacing: 16, alignment: .top)],
+                spacing: 16
+            ) {
+                ForEach(visibleCafes) { cafe in
+                    NavigationLink(value: cafe.id) {
+                        CafeStatusCard(cafe: cafe)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
 
             if pageCount > 1 {

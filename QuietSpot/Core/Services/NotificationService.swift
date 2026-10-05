@@ -1,3 +1,4 @@
+import OSLog
 import UserNotifications
 
 @MainActor
@@ -19,7 +20,11 @@ struct NotificationService {
 
     func sendCafeUpdate(cafe: CafeSnapshot, report: CafeCheckIn, userID: String) async throws {
         let status = await authorizationStatus()
-        guard status == .authorized || status == .provisional || status == .ephemeral else { return }
+        guard status == .authorized || status == .provisional || status == .ephemeral else {
+            Logger(subsystem: "dinan.QuietSpot", category: "CafeNotifications")
+                .notice("Café alert skipped: notification permission status \(status.rawValue)")
+            return
+        }
         try Task.checkCancellation()
         let content = UNMutableNotificationContent()
         content.title = "New check-in at \(cafe.name)"

@@ -28,7 +28,10 @@ struct CafeStatusCard: View {
                     Text(cafe.name).font(.headline)
                     Text(cafe.area).font(.subheadline).foregroundStyle(.secondary)
                     if let updatedAt = cafe.updatedAt {
-                        Text("Updated \(updatedAt)")
+                        CheckInTimeText(
+                            date: cafe.recentCheckIns.first?.createdAt,
+                            fallback: updatedAt, prefix: "Updated "
+                        )
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

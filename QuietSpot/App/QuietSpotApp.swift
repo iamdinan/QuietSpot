@@ -9,6 +9,10 @@ import SwiftUI
 
 @main
 struct QuietSpotApp: App {
+    init() {
+        NotificationService().configurePresentation()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()

@@ -28,7 +28,11 @@ struct CafeCheckInService {
             ])
     }
 
-    func observeLatest(cafeID: String, onChange: @escaping (Result<[CafeCheckIn], Error>) -> Void) -> ListenerRegistration {
+    func observeLatest(
+        cafeID: String,
+        onConfirmedChange: (([CafeCheckIn]) -> Void)? = nil,
+        onChange: @escaping (Result<[CafeCheckIn], Error>) -> Void
+    ) -> ListenerRegistration {
         Firestore.firestore().collection("cafes").document(cafeID)
             .collection("checkIns")
             .order(by: "createdAt", descending: true)
@@ -44,19 +48,18 @@ struct CafeCheckInService {
                     // An empty cache doesn't prove the server has no check-ins.
                     if snapshot.metadata.isFromCache && snapshot.documents.isEmpty { return }
                     do {
-                        let formatter = RelativeDateTimeFormatter()
-                        formatter.unitsStyle = .full
                         let checkIns = try snapshot.documents.map { document in
                             let report = try document.data(as: CafeCheckInDocument.self)
                             let date = report.createdAt.dateValue()
                             return CafeCheckIn(
                                 id: document.documentID, createdAt: date,
-                                time: formatter.localizedString(for: date, relativeTo: .now),
+                                time: CafeCheckInTimeFormatter.string(from: date),
                                 noiseLevel: report.noiseLevel, wifi: report.wifi,
                                 outlets: report.outlets, crowd: report.crowd
                             )
                         }
                         onChange(.success(checkIns))
+                        if !snapshot.metadata.isFromCache { onConfirmedChange?(checkIns) }
                     } catch {
                         onChange(.failure(error))
                     }

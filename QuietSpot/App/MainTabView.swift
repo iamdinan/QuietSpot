@@ -9,6 +9,11 @@ struct MainTabView: View {
     let onSignOut: () -> Void
     @State private var cafeViewModel = CafeViewModel()
     @State private var community = CommunityViewModel()
+    @State private var cafeNotifications = CafeUpdateNotificationMonitor()
+    @StateObject private var location = LocationProvider()
+    @AppStorage("mapRadiusKilometers") private var radius = 5.0
+    @AppStorage("cafeUpdatesEnabled") private var cafeUpdatesEnabled = true
+    @Environment(\.scenePhase) private var scenePhase
     @Binding var profile: UserProfile
     @Environment(AuthenticationViewModel.self) private var authentication
 
@@ -30,7 +35,7 @@ struct MainTabView: View {
                     Label("Community", systemImage: "person.3")
                 }
 
-            CafeMapView(cafes: $cafeData.cafes)
+            CafeMapView(cafes: $cafeData.cafes, location: location)
                 .tabItem {
                     Label("Map", systemImage: "map")
                 }
@@ -43,12 +48,38 @@ struct MainTabView: View {
         .tint(AppColor.accent)
         .environment(community)
         .task {
+            refreshNotificationContext()
+            cafeViewModel.onConfirmedStatusChange = { [cafeNotifications] cafe, report in
+                cafeNotifications.receive(cafe: cafe, latest: report)
+            }
+            if scenePhase == .active && cafeUpdatesEnabled { location.start(requestPermission: false) }
             if let userID = authentication.userID { community.start(userID: userID) }
             cafeViewModel.updateFavorites(authentication.favoriteCafeIDs)
             await cafeViewModel.load()
         }
         .onChange(of: authentication.favoriteCafeIDs) { _, ids in
             cafeViewModel.updateFavorites(ids)
+            refreshNotificationContext()
+        }
+        .onChange(of: authentication.isUserDataReady) { refreshNotificationContext() }
+        .onChange(of: location.currentLocation) { refreshNotificationContext() }
+        .onChange(of: radius) { refreshNotificationContext() }
+        .onChange(of: cafeUpdatesEnabled) {
+            if cafeUpdatesEnabled && scenePhase == .active { location.start(requestPermission: false) }
+            refreshNotificationContext()
+        }
+        .onChange(of: scenePhase) {
+            if scenePhase == .active {
+                location.start(requestPermission: false)
+            } else {
+                location.stop()
+            }
+            refreshNotificationContext()
+        }
+        .onDisappear {
+            location.stop()
+            cafeNotifications.stop()
+            cafeViewModel.onConfirmedStatusChange = nil
         }
         .overlay {
             if cafeViewModel.isLoading && cafeViewModel.cafes.isEmpty {
@@ -87,6 +118,16 @@ struct MainTabView: View {
                 .background(.regularMaterial)
             }
         }
+    }
+
+    private func refreshNotificationContext() {
+        cafeNotifications.updateContext(
+            userID: authentication.userID,
+            favoriteIDs: authentication.favoriteCafeIDs,
+            location: location.currentLocation,
+            radiusKilometers: radius,
+            enabled: cafeUpdatesEnabled && authentication.isUserDataReady && scenePhase == .active
+        )
     }
 }
 

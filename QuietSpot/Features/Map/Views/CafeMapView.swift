@@ -4,12 +4,11 @@ import MapKit
 struct CafeMapView: View {
     @Binding var cafes: [CafeSnapshot]
     @AppStorage("mapRadiusKilometers") private var radius = 5.0
-    @StateObject private var location = LocationProvider()
+    @ObservedObject var location: LocationProvider
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
     @State private var path: [String] = []
     @State private var hasCenteredOnLocation = false
-    @State private var isVisible = false
     @State private var camera: MapCameraPosition = .region(
         MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: 6.9147, longitude: 79.8610),
@@ -88,18 +87,11 @@ struct CafeMapView: View {
                 }
             }
             .onAppear {
-                isVisible = true
                 location.start()
             }
-            .onDisappear {
-                isVisible = false
-                location.stop()
-            }
             .onChange(of: scenePhase) {
-                if scenePhase == .active && isVisible && path.isEmpty {
-                    location.start()
-                } else {
-                    location.stop()
+                if scenePhase == .active && path.isEmpty {
+                    location.start(requestPermission: false)
                 }
             }
             .onChange(of: location.currentLocation) {
@@ -154,5 +146,5 @@ struct CafeMapView: View {
 }
 
 #Preview {
-    CafeMapView(cafes: .constant([]))
+    CafeMapView(cafes: .constant([]), location: LocationProvider())
 }

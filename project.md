@@ -1,12 +1,12 @@
 # QuietSpot project guide
 
-Last reviewed: October 2, 2026. This document describes the current repository and distinguishes implemented behavior from proposed backend work. Update it at the end of a coding session when requested, rather than after every code change.
+Last reviewed: October 5, 2026. This document describes the current repository and distinguishes implemented behavior from proposed backend work. Update it at the end of a coding session when requested, rather than after every code change.
 
 ## App overview
 
 QuietSpot is a SwiftUI café discovery and conditions-monitoring app. Users find cafés, save favorites, report conditions through check-ins, and share café insights with the community. Café metadata loads from Firestore; the first configured café is Barista - Ward Place in Colombo, Sri Lanka. Café photos use separate Firestore Base64 image documents for the limited prototype (around 20 photos). Metadata loading was confirmed working on October 1; the Base64 loader added October 2 still requires user verification.
 
-The five tabs are always ordered **Home, Explore, Community, Map, Profile**. Firebase Authentication, café metadata/images, check-ins, profiles, favorites, and community posts/likes have Firestore-backed code. The user confirmed community posting works after the Share crash changes. Profile-photo Base64 saving is currently failing according to the user and remains unresolved; do not describe photo persistence as verified.
+The five tabs are always ordered **Home, Explore, Community, Map, Profile**. Firebase Authentication, café metadata/images, check-ins, profiles, favorites, and community posts/likes have Firestore-backed code. The user confirmed community posting works after the Share crash changes. The user confirmed on October 5 that the profile-photo saving issue is resolved. Local notifications for nearby favorite café stat changes are implemented; live banner delivery still needs manual verification.
 
 ### Current implementation status
 
@@ -16,12 +16,12 @@ The five tabs are always ordered **Home, Explore, Community, Map, Profile**. Fir
 | Session restoration | Firebase auth-state listener drives the app shell |
 | Password reset | Firebase sends the reset email; user completes the reset through its link |
 | Display name | Registration initially saves it to Firebase Auth; Firestore `users/{uid}.displayName` is the source of truth for subsequent profile edits and community authors |
-| Profile photo | PhotosPicker → resized JPEG → Base64 → intended `users/{uid}.photoBase64` write; user reports the Base64 is not saving, unresolved |
+| Profile photo | PhotosPicker → resized JPEG → Base64 → `users/{uid}.photoBase64`; saving issue confirmed resolved by the user on October 5 |
 | Cafés and favorites | Firestore metadata and separate Base64 café image reads; per-user favorites use `users/{uid}/favorites/{cafeID}` |
 | Check-ins | Firestore `cafes/{cafeID}/checkIns`; realtime latest-three listeners update shared café state |
 | Community posts and likes | Firestore `communityPosts` and per-post `likes/{uid}`; stored count changes atomically with like/unlike; posting confirmed working, multi-account like tests still needed |
 | Map | MapKit and Core Location with Firestore café coordinates and local radius filtering |
-| Notifications | Real permission request/status plus a stored preference; no delivery pipeline |
+| Notifications | Local notifications for changed stats at favorite cafés within the map radius while the app is active; system permission and stored preference are respected |
 | VoiceOver | Native iOS screen-reader support; live status and setup guidance in Settings → Accessibility; no app-owned toggle or speech engine |
 | Face ID | Simulator-only biometric-assisted Firebase sign-in; reuses the latest successfully authenticated email/password held in memory after a matching face |
 | Firestore | Metadata reads at tab startup and Home pull-to-refresh; simulator build passed and live loading confirmed working by the user |
@@ -48,6 +48,7 @@ An Xcode application using Swift Package Manager dependencies does **not** need 
 ```text
 QuietSpot/
 ├── project.md
+├── Tests/                             # Standalone café notification policy regression checks
 ├── firestore-user-data.rules           # User/favorite rules fragment for console publishing
 ├── firestore-community.rules           # Community/like rules fragment for console publishing
 ├── QuietSpot.xcodeproj/
@@ -64,12 +65,14 @@ QuietSpot/
     ├── Core/
     │   ├── Models/                        # CafeDocument, CafeSnapshot, CafeCheckIn,
     │   │                                  # CafeCheckInDocument, CafeInsightDocument,
-    │   │                                  # CafeInsight, UserProfile, AuthenticationSession
+    │   │                                  # CafeInsight, UserProfile, AuthenticationSession,
+    │   │                                  # CafeStatUpdateTracker, CafeUpdateNotificationContext
     │   ├── Services/                      # FirebaseConfiguration, CafeService,
     │   │                                  # CafeImageService, CafeCheckInService,
     │   │                                  # AuthenticationService, UserDataService,
     │   │                                  # CommunityService, ProfilePhotoService,
-    │   │                                  # NotificationService, FaceIDService
+    │   │                                  # NotificationService, CafeUpdateNotificationMonitor,
+    │   │                                  # FaceIDService
     │   ├── ViewModels/                    # CafeViewModel, CafeImageViewModel
     │   ├── Location/LocationProvider.swift
     │   ├── Components/
@@ -112,7 +115,7 @@ QuietSpot/
 - Reuse `CafeStatusCard`, `CafeStatusGrid`, `CafePager`, `CafeInsightFeed`, and `ProfileAvatar` instead of duplicating them.
 - Add view models when a feature gains asynchronous data loading, subscriptions, or substantial state/business logic. Do not create empty layers merely to match a template.
 - The architecture is feature-based MVVM: services own SDK/framework operations; observable view models own asynchronous state; views render state and invoke actions. Authentication, café loading/images, check-in submission, community, profile editing, and notification permissions have view models. Pure presentation screens retain small local state/bindings rather than empty view-model layers.
-- `AuthenticationService` returns `AuthenticationSession` instead of exposing Firebase user objects to views. `ProfilePhotoService` handles JPEG resizing; `NotificationService` handles system authorization. `UserDataService` owns profile/favorite operations; `CommunityService` owns posts/like transactions.
+- `AuthenticationService` returns `AuthenticationSession` instead of exposing Firebase user objects to views. `ProfilePhotoService` handles JPEG resizing; `NotificationService` handles system authorization, local notification delivery, and foreground presentation. `CafeUpdateNotificationMonitor` coordinates confirmed stat changes with favorites, radius, location, and app activity; the tracker/context models own duplicate suppression and eligibility. `UserDataService` owns profile/favorite operations; `CommunityService` owns posts/like transactions.
 - Keep Firebase SDK calls outside presentation code where practical. Future Firestore services should feed feature view models rather than each row directly querying Firebase.
 
 ## UI and interaction requirements
@@ -154,10 +157,10 @@ Do not introduce extra statuses such as “moderate crowd.” The shared status 
 - **Post card:** café header/thumbnail/link, compact author/time line, insight text, and a separate like footer. Thumbs-up means like; hearts remain reserved for café favorites. Tap again to unlike through a Firestore transaction. Buttons disable while the user's like state loads or a change is pending. Likes do not change feed ordering.
 - **Profile:** centered avatar/display name/Edit profile header; left-aligned My insights with count, Settings, and confirmed Sign out.
 - **My insights:** filters posts by the current profile's user ID and reuses Community's cards/feed. Likes are shared between these screens. Post editing/deletion is not implemented.
-- **Edit profile:** PhotosPicker, add/change/remove photo, edit display name, Save/Cancel, and draft-discard protection. Saves target Firestore, not Firebase Auth name updates. JPEGs are resized to at most 512 pixels and compressed at 0.85 quality, then encoded into `photoBase64`; removal writes an empty string. Photo Base64 saving is currently reported broken and needs diagnosis. Profile listeners resolve authors for old posts; current-user cards also use the shared profile state.
+- **Edit profile:** PhotosPicker, add/change/remove photo, edit display name, Save/Cancel, and draft-discard protection. Saves target Firestore, not Firebase Auth name updates. JPEGs are resized to at most 512 pixels and compressed at 0.85 quality, then encoded into `photoBase64`; removal writes an empty string. The user confirmed the photo-saving issue is resolved on October 5; the exact cause/fix was not supplied. Profile listeners resolve authors for old posts; current-user cards also use the shared profile state.
 - **Settings:** appearance picker, Notifications, Accessibility, Face ID toggle, About QuietSpot. Simulator Face ID enrollment and the latest successfully authenticated email/password remain only in memory and reset when the app restarts. No password-confirmation sheet, Keychain storage, or disk persistence exists. A restored Firebase session without remembered credentials must sign out and sign in with a password before enabling Face ID. Map radius is controlled in Map, not Settings.
 - **Accessibility:** live VoiceOver On/Off status from SwiftUI's `accessibilityVoiceOverEnabled` environment value, system setup instructions, basic gestures, slider guidance, and a link to Apple's VoiceOver guide. No Firebase integration or separate app preference is needed.
-- **Map:** current location, proximity circle, and matching Firestore café pins. Radius is 1–10 km in 1 km steps, default 5 km. Without location, show a clearly labeled Colombo preview instead of pretending it is the user's location. Handle denied/approximate location; stop updates when Map is not active.
+- **Map:** current location, proximity circle, and matching Firestore café pins. Radius is 1–10 km in 1 km steps, default 5 km. Without location, show a clearly labeled Colombo preview instead of pretending it is the user's location. Handle denied/approximate location. Map and café notifications share a `LocationProvider` owned by the signed-in tab shell; tracking can continue across tabs while the app is active and stops/clears its location when the app becomes inactive or the shell disappears.
 
 `Core/SampleData` and its files were removed. List previews use empty state; café details/status previews use small inline examples. Preview photos use placeholders rather than querying Firestore. The runtime does not fall back to samples on error. Cafés without check-ins display “No check-ins yet”; missing conditions are not treated as positive filters. `CafeImage` shares cropping, loading, and unavailable placeholders across cards, thumbnails, and details.
 
@@ -205,13 +208,13 @@ Auth screen → AuthenticationViewModel → AuthenticationService → Firebase A
 
 Key files and responsibilities:
 
-- `App/QuietSpotApp.swift`: opens the root `ContentView`; Firebase startup is handled once by the authentication view model's `start()` method.
+- `App/QuietSpotApp.swift`: configures foreground local-notification presentation and opens the root `ContentView`; Firebase startup is handled once by the authentication view model's `start()` method.
 - `Core/Services/FirebaseConfiguration.swift`: reads the bundled plist, checks bundle-ID compatibility, avoids duplicate configuration, and reports missing/mismatched setup without entering a fake authenticated session.
 - `Core/Services/AuthenticationService.swift`: configures/observes Firebase Auth, performs sign-in/registration/reset/sign-out, maps sessions/errors, and saves the initial registration display name. The obsolete Auth display-name editing method was removed; edited names now belong to Firestore.
 - `Features/Authentication/ViewModels/AuthenticationViewModel.swift`: `@MainActor`, `@Observable`; session state, auth actions, simulator Face ID, busy/errors, plus Firestore profile/favorite subscriptions via `UserDataService`. User-data readiness gates profile saves and favorite changes. Listeners reset on account changes and reject stale callbacks. Successful password sign-in/registration remembers simulator credentials; Face ID still requires Firebase acceptance.
 - `Core/Services/FaceIDService.swift`: LocalAuthentication prompt, enabled-email set, and one in-memory email/password pair. Despite its general name, the current implementation remains simulator-only. Email matching trims whitespace and ignores case. It neither writes credentials to disk nor bypasses Firebase authentication.
 - `App/ContentView.swift`: owns and injects authentication state, restores sessions, chooses authenticated/unauthenticated navigation, and presents account notices.
-- `App/MainTabView.swift`: owns `CafeViewModel` and `CommunityViewModel`, injects shared community state, and receives the authenticated profile binding. It starts subscriptions, syncs favorite flags, and presents café/account-data loading and retry feedback. The shell is keyed by user ID so accounts do not share local state.
+- `App/MainTabView.swift`: owns `CafeViewModel` and `CommunityViewModel`, injects shared community state, and receives the authenticated profile binding. It also owns the shared `LocationProvider` and `CafeUpdateNotificationMonitor`, starts subscriptions, syncs favorite flags and notification context, and presents café/account-data loading and retry feedback. The shell is keyed by user ID so accounts do not share local state.
 
 `UserProfile.id` and post `authorID` use Firebase Authentication UID strings. Café, post, and persisted check-in IDs use Firestore document IDs. Never use a display name as an identifier. Community author listeners resolve names/photos from `users/{authorID}`, updating historical posts when profiles change.
 
@@ -312,7 +315,7 @@ This is the historical initial rule set, not sufficient for current writes. Keep
 - `CafeService` fetches all café documents from the server and decodes them with `CafeDocument`. One missing or incorrectly typed required field in any document fails the whole load. It does not silently drop documents or fall back to sample cafés. See [Firebase Swift decoding](https://firebase.google.com/docs/firestore/solutions/swift-codable-data-mapping).
 - If a future error indicates missing data or a type mismatch, inspect every café document against the field table above. If it indicates insufficient permissions, verify the deployed rules, signed-in session, and that the app's configuration points to the same Firebase project. Capture the complete error before selecting a fix for network/API configuration failures.
 - Café metadata still uses startup/refresh server reads, not a metadata listener. Check-in statuses, profiles, favorites, community posts, and individual like state use realtime listeners.
-- Regression-check café photos, GeoPoint map pins, empty/error check-in states, favorite changes across tabs, and refresh preservation of confirmed reports. Verify persistence and account isolation after restart/sign-out; profile-photo persistence is specifically unresolved.
+- Regression-check café photos, GeoPoint map pins, empty/error check-in states, favorite changes across tabs, and refresh preservation of confirmed reports. Verify persistence and account isolation after restart/sign-out. The user confirmed the profile-photo saving issue is resolved on October 5; the coding agent has not independently repeated the save/remove/relaunch checks.
 
 ### Cleanup audit
 
@@ -330,7 +333,7 @@ These are the paths used by the current code, not proposed collection names. Fir
 ```text
 users/{userID}                         # Community-visible profile
   displayName: String
-  photoBase64: String                  # Empty string means no photo; saving currently unresolved
+  photoBase64: String                  # Empty string means no photo; saving issue confirmed resolved by user
   createdAt: Timestamp
   updatedAt: Timestamp
   favorites/{cafeID}
@@ -377,7 +380,7 @@ Do not use the older proposed top-level `posts` or `checkIns` paths. The code us
 - `AuthenticationViewModel` observes the profile and favorite subcollection, resets listeners/state on account changes, and guards stale callbacks with a generation token. Both must load before profile saving or heart changes are enabled. Failures appear in the account-data banner with retry.
 - Firestore is the profile source of truth after initialization. Editing a name does not also change Firebase Auth's stored display name. Email/password remain in Authentication; they are not written to the public profile.
 - Favorite documents use the café ID as their document ID. Heart changes await server acknowledgement, with duplicate taps disabled while saving. The shared café view model derives its flags from these IDs, updating Home, Explore, Map/details, and the community favorite picker consistently.
-- The profile-photo path is implemented but currently reported not saving: selection → `ProfilePhotoService` JPEG conversion → `saveProfile()` → `photoBase64`. Empty string removes a photo. Base64 strings above 700,000 bytes are rejected before writing; names/photos are written together with `updatedAt`.
+- The profile-photo saving issue was confirmed resolved by the user on October 5. The implemented path is: selection → `ProfilePhotoService` JPEG conversion → `saveProfile()` → `photoBase64`. Empty string removes a photo. Base64 strings above 700,000 bytes are rejected before writing; names/photos are written together with `updatedAt`.
 
 ### Community posts and likes
 
@@ -395,22 +398,45 @@ Do not use the older proposed top-level `posts` or `checkIns` paths. The code us
 - Retain the reported indexing exemption for `cafeImages.imageBase64`. Add an exemption for `users.photoBase64` because it is not queried. Do not disable the `createdAt` index needed by check-in/post ordering. Confirm index settings manually; code does not configure them.
 - Do not loosen rules globally to work around permission errors. Capture the actual error and check the project, signed-in UID, document types, rule nesting, and required indexes.
 
-### Verification and known issues — October 2, 2026
+### Verification and known issues — October 5, 2026
 
 - Simulator builds passed after architecture cleanup, sample/asset deletion, user/favorite integration, community integration, and the latest Share-flow changes. Build success does not verify deployed rules or live persistence.
 - **Community posting confirmed working by the user after the crash changes.** Previously, tapping Share crashed with `EXC_BAD_ACCESS` in `swift_retain` while `CommunityService.share()` built the write dictionary. The form now captures the café ID/text/view model before starting its MainActor task, calls the view model directly instead of an intermediate async callback, and uses a reference-type `CommunityService` with an explicit write payload. The exact low-level lifetime cause was not independently proven; the user confirmed the resulting posting flow works.
-- **Open issue: profile photo Base64 does not save to Firestore**, reported by the user. Expected field: `users/{uid}.photoBase64`. The cause has not been diagnosed, and this documentation update does not fix it. Next investigation: obtain the Save error/console output, inspect the document and deployed user rules, verify encoded payload size and field types, then retest save/remove/relaunch. Do not mark photo upload/persistence complete based on the local image preview.
+- **Profile-photo saving issue resolved**, confirmed by the user on October 5. Photos are stored in `users/{uid}.photoBase64`. The exact cause/fix was not supplied; this records the user’s confirmation rather than an independent runtime test by the coding agent.
 - Still verify likes with two accounts (one like per UID, unlike, simultaneous changes, persistence after restart), favorite account isolation, profile-name changes on another user's historical posts, and check-in propagation. Those specific runtime checks have not been independently performed by the coding agent.
-- No automated test target or Firestore emulator rule tests currently exist. Console publishing and device/simulator interaction are manual steps.
+- No Xcode automated test target or Firestore emulator rule tests currently exist. Standalone notification policy checks are available in `Tests/` and run with `sh Tests/run-cafe-notification-tests.sh`; they passed on October 5. Console publishing and live device/simulator interaction remain manual steps.
+
+## Local café stat notifications
+
+Implemented October 5, 2026 using UserNotifications and the existing Firestore check-in listeners. Alerts cover noise, Wi-Fi, outlets, and crowd changes at favorite cafés within the selected map radius while QuietSpot is active, across all signed-in tabs.
+
+- `CafeCheckInService.observeLatest()` supplies a separate confirmed-change callback only for server snapshots without pending writes. Cached reports can still populate café screens without triggering notification processing.
+- `CafeViewModel.onConfirmedStatusChange` forwards the café and newest confirmed report to `CafeUpdateNotificationMonitor`; no extra Firestore subscriptions are created for notifications.
+- `CafeStatUpdateTracker` establishes a silent baseline from the first confirmed snapshot for each café. Subsequent reports must have a different ID and a newer timestamp, with at least one changed stat. Repeated snapshots, older reports, empty snapshots, and new reports with identical stats do not alert. A first report after a confirmed empty history can alert. Baselines advance even when a café is ineligible, so changing favorites, location, radius, or preferences does not replay an old update.
+- `CafeUpdateNotificationContext` requires a signed-in user, a favorite café, valid location accuracy, an enabled preference, and an exact distance within `mapRadiusKilometers`. `MainTabView` additionally requires loaded profile/favorite data and an active scene. The shared radius defaults to 5 km and uses the Map control’s 1–10 km range.
+- `MainTabView` shares location with Map, updates notification context as favorites/location/radius/preferences change, and cancels pending delivery tasks when context changes or the shell disappears. The monitor resets baselines when its user ID changes. Location startup outside Map does not prompt for permission; Map requests when-in-use access. Tracking rejects cached fixes older than five minutes when received and clears location when stopped.
+- `NotificationService` checks current iOS notification authorization before adding an immediate local request. The title contains the café name and “Stats updated”; the body lists all four stats. Request identifiers include user, café, and report IDs; `userInfo` includes the café ID. `QuietSpotApp` installs a retained notification-center delegate requesting foreground banner, notification-list, and sound presentation. Notification-tap navigation is not implemented.
+- Enable delivery through **Profile → Settings → Notifications → Allow notifications**, keep **Café updates** enabled, and allow location through **Map**. Denied notification permission, unavailable location, disabled updates, and cafés outside the radius prevent delivery. The notification preference and radius remain device-wide `AppStorage` settings.
+- This feature detects updates while the app is active. It does not fetch or monitor fresh stats while suspended or closed. Duplicate tracking is in memory; a new signed-in shell establishes fresh silent baselines.
+
+Verification on October 5: the unsigned Debug simulator build passed, `git diff --check` was clean, and `sh Tests/run-cafe-notification-tests.sh` passed. The standalone checks cover initial/repeated/older reports, changed versus identical stats, empty history, favorites, sign-in state, enabled preferences, missing location, and radius filtering. Live Firestore-to-banner delivery has not been independently verified by the coding agent.
+
+Manual verification:
+
+1. Run QuietSpot in Simulator, sign in, allow notifications, and enable Café updates.
+2. Set a simulator location near a real loaded café, open Map to allow location access, and choose a radius that includes the café.
+3. Favorite the café and wait for its current confirmed stats to load.
+4. Submit a new check-in with at least one different stat, from this app or another signed-in device. Keep the receiving app active; verify a local banner with the café name and four stats, including while viewing another tab.
+5. Confirm initial loads and identical-stat reports stay silent. Repeat with the café unfavorited, outside a smaller radius, updates disabled, and permissions denied; verify no alerts. Restore eligibility and confirm old updates are not replayed.
 
 ## Remaining backend work
 
 - Add cursor-based server pagination before the community dataset grows. The current all-post listener plus per-post like/profile listeners suits the small prototype, not an unbounded feed. See [Firestore pagination](https://firebase.google.com/docs/firestore/query-data/query-cursors).
 - Consider a trusted latest-status summary for cafés to reduce per-café report listeners at scale. Any summary updater should be retry-safe and reject older reports overwriting newer status.
 - Map radius/search still operate locally over loaded cafés. Larger-area searches need a deliberate indexed/geoquery strategy, exact-distance filtering, and deduplication; geohashes are not currently stored. See [Firebase geoqueries](https://firebase.google.com/docs/firestore/solutions/geoqueries).
-- Café Base64 photos remain a deliberate small-prototype tradeoff. Profile photos use the same encoding approach but must have their saving issue resolved. A dedicated image provider can be considered later; there is no Cloud Storage integration now. Never bundle privileged provider secrets.
+- Café Base64 photos remain a deliberate small-prototype tradeoff. Profile photos use the same encoding approach; their saving issue was confirmed resolved by the user on October 5. A dedicated image provider can be considered later; there is no Cloud Storage integration now. Never bundle privileged provider secrets.
 - Appearance, notification preference, and map radius remain local/device-wide. Cloud preferences and account-specific settings are not implemented. Biometric enrollment remains separate from Firestore.
-- Notification permissions are implemented, but push tokens, FCM/APNs delivery, background jobs, geofenced notifications, and deduplication are not. Local nearby counts require available data/location; a scheduled local notification cannot fetch fresh Firebase data when it fires.
+- Local café stat notifications and in-memory duplicate suppression are implemented for active app use. Push tokens, FCM/APNs delivery, background jobs, and geofenced notifications remain unimplemented. This implementation does not monitor fresh café stats while the app is closed; no backend notification service is required for the current local feature.
 - Plan moderation/reporting, account deletion with related-data cleanup, abuse protection, and production biometric credential storage before release.
 
 ## Security and privacy requirements
@@ -428,6 +454,6 @@ Do not use the older proposed top-level `posts` or `checkIns` paths. The code us
 
 ## Development handoff
 
-Next priority: diagnose and fix the unresolved profile-photo Base64 write, then verify persistence, multi-account likes/favorites, author updates, and check-in propagation. Continue feature-by-feature with services/view models and narrowly scoped rules. Keep the folder structure simple and update this document at the end of a coding session when requested.
+Next priority: manually verify local café notification delivery, then verify persistence, multi-account likes/favorites, author updates, and check-in propagation. The profile-photo saving issue is resolved according to the user. Continue feature-by-feature with services/view models and narrowly scoped rules. Keep the folder structure simple and update this document at the end of a coding session when requested.
 
 UI checks should include light/dark mode, large accessibility text, small iPhone layouts, readable image crops, navigation/back behavior, empty favorites/results/posts, permission-denied location/notifications, and network failures. Use Accessibility Inspector in Simulator and test native VoiceOver speech, gestures, headings, control states, and pagination on a physical iPhone. Authentication checks should include session restoration, failed credentials, duplicate registration, reset email, name changes, and confirmed sign-out. A successful build alone is not evidence that every live backend flow or accessibility interaction works.

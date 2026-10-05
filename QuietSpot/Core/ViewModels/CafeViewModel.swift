@@ -15,6 +15,7 @@ final class CafeViewModel {
     @ObservationIgnored private var statusListeners: [String: ListenerRegistration] = [:]
     @ObservationIgnored private var listenerGeneration = UUID()
     @ObservationIgnored private var favoriteIDs: Set<String> = []
+    @ObservationIgnored var onConfirmedStatusChange: ((CafeSnapshot, CafeCheckIn?) -> Void)?
 
     func updateFavorites(_ ids: Set<String>) {
         favoriteIDs = ids
@@ -70,7 +71,11 @@ final class CafeViewModel {
 
         for cafe in cafes {
             let cafeID = cafe.id
-            statusListeners[cafeID] = checkInService.observeLatest(cafeID: cafeID) { [weak self] result in
+            statusListeners[cafeID] = checkInService.observeLatest(cafeID: cafeID, onConfirmedChange: { [weak self] checkIns in
+                guard let self, self.listenerGeneration == generation,
+                      let cafe = self.cafes.first(where: { $0.id == cafeID }) else { return }
+                self.onConfirmedStatusChange?(cafe, checkIns.first)
+            }) { [weak self] result in
                 guard let self, self.listenerGeneration == generation,
                       let index = self.cafes.firstIndex(where: { $0.id == cafeID }) else { return }
                 switch result {

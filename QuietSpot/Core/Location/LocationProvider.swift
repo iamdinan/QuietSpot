@@ -18,11 +18,11 @@ final class LocationProvider: NSObject, ObservableObject, CLLocationManagerDeleg
         manager.distanceFilter = 100
     }
 
-    func start() {
+    func start(requestPermission: Bool = true) {
         isActive = true
         errorMessage = nil
         updateAuthorization()
-        if manager.authorizationStatus == .notDetermined {
+        if requestPermission && manager.authorizationStatus == .notDetermined {
             manager.requestWhenInUseAuthorization()
         }
     }
@@ -30,6 +30,7 @@ final class LocationProvider: NSObject, ObservableObject, CLLocationManagerDeleg
     func stop() {
         isActive = false
         manager.stopUpdatingLocation()
+        currentLocation = nil
     }
 
     private func updateAuthorization() {
@@ -51,7 +52,10 @@ final class LocationProvider: NSObject, ObservableObject, CLLocationManagerDeleg
     }
 
     nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let latest = locations.last, latest.horizontalAccuracy >= 0 else { return }
+        // Reject old cached fixes when starting tracking. Once accepted, a fix
+        // remains useful while tracking a stationary user until tracking stops.
+        guard let latest = locations.last, latest.horizontalAccuracy >= 0,
+              abs(latest.timestamp.timeIntervalSinceNow) <= 300 else { return }
         Task { @MainActor [weak self] in
             guard let self, self.isActive else { return }
             self.currentLocation = latest

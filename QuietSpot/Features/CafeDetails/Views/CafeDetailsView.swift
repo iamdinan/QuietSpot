@@ -59,7 +59,11 @@ struct CafeDetailsView: View {
 
                     ForEach(cafe.recentCheckIns) { checkIn in
                         VStack(alignment: .leading, spacing: 12) {
-                            Label(checkIn.time, systemImage: "clock")
+                            Label {
+                                CheckInTimeText(date: checkIn.createdAt, fallback: checkIn.time)
+                            } icon: {
+                                Image(systemName: "clock")
+                            }
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                             CafeStatusGrid(checkIn: checkIn)

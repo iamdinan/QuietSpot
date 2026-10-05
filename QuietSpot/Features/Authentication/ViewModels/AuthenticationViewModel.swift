@@ -210,6 +210,10 @@ final class AuthenticationViewModel {
     private func updateSession(_ user: AuthenticationSession?) {
         let previousUserID = userID
         userID = user?.userID
+        if previousUserID != userID || userID == nil {
+            // Clear the previous account's favourites before loading another account.
+            PulseWidgetPublisher.publish(PulseWidgetContent(state: userID == nil ? .signedOut : .loading))
+        }
         email = user?.email
         refreshFaceID()
         if let user {

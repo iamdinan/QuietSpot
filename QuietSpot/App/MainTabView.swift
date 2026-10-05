@@ -47,6 +47,9 @@ struct MainTabView: View {
         }
         .tint(AppColor.accent)
         .environment(community)
+        .onChange(of: widgetContent, initial: true) { _, content in
+            PulseWidgetPublisher.publish(content)
+        }
         .task {
             refreshNotificationContext()
             cafeViewModel.onConfirmedStatusChange = { [cafeNotifications] cafe, report in
@@ -128,6 +131,14 @@ struct MainTabView: View {
             radiusKilometers: radius,
             enabled: cafeUpdatesEnabled && authentication.isUserDataReady && scenePhase == .active
         )
+    }
+
+    private var widgetContent: PulseWidgetContent {
+        guard authentication.isUserDataReady else { return PulseWidgetContent(state: .loading) }
+        if !authentication.favoriteCafeIDs.isEmpty && cafeViewModel.cafes.isEmpty {
+            return PulseWidgetContent(state: cafeViewModel.errorMessage == nil ? .loading : .unavailable)
+        }
+        return PulseWidgetPublisher.content(cafes: cafeViewModel.cafes)
     }
 }
 

@@ -60,7 +60,6 @@ QuietSpot/
     │   ├── ContentView.swift              # Authentication/navigation shell
     │   ├── MainTabView.swift              # Five tabs and shared café state
     │   ├── AppRoute.swift
-    │   ├── AppAppearance.swift
     │   └── GoogleService-Info.plist        # Project-specific Firebase config
     ├── Core/
     │   ├── Models/                        # CafeDocument, CafeSnapshot, CafeCheckIn,
@@ -123,7 +122,7 @@ QuietSpot/
 Follow [Apple Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines). Native controls are a starting point, not proof of complete compliance: test layouts, interaction states, accessibility, and contrast on-device.
 
 - Prefer native `TabView`, `NavigationStack`, `Form`, `List`, `Picker`, `Toggle`, searchable fields, and focused sheets.
-- Support system/light/dark appearance with semantic backgrounds and adaptive colors.
+- Follow the device's system light/dark appearance with semantic backgrounds and adaptive colors; there is no app-specific appearance override.
 - Use Dynamic Type text styles, readable wrapping, and approximately 44 × 44-point or larger interactive targets.
 - Communicate status with text/icons as well as color. Give icon-only actions descriptive accessibility labels.
 - Keep photos consistently cropped and bounded. Avoid unnecessarily large stat tiles or oversized decorative cards.
@@ -145,7 +144,7 @@ Do not introduce extra statuses such as “moderate crowd.” The shared status 
 
 ### Screen behavior
 
-- **Landing:** café hero image, app name/title, Sign in to continue, and an appearance toggle. The image extends into the top safe area; the toggle remains below the sensor/notch area.
+- **Landing:** café hero image, app name/title, and Sign in to continue. The image extends into the top safe area. The redundant appearance toggle was removed to eliminate its overlap with the status bar. The app follows the device's light/dark appearance; the Settings picker and saved override were also removed. Apple's [Dark Mode guidance](https://developer.apple.com/design/human-interface-guidelines/dark-mode) recommends respecting system appearance and avoiding app-specific appearance controls.
 - **Sign in:** welcome text, email/password fields, Forgot password, and Create an account. For an enabled email with remembered credentials, Use Face ID prompts for simulated biometrics, then signs in through Firebase without asking for the password again. Only successful Firebase authentication opens Home; no confirmation-only step or fake authenticated session is used.
 - **Create account:** display name, email, password, and Create account. Firebase Auth creates the account/name; the user-data flow creates `users/{uid}` if missing without overwriting an existing profile.
 - **Forgot password:** email field, reset button, loading/error feedback, and a neutral confirmation that does not reveal whether the address is registered.
@@ -158,7 +157,7 @@ Do not introduce extra statuses such as “moderate crowd.” The shared status 
 - **Profile:** centered avatar/display name/Edit profile header; left-aligned My insights with count, Settings, and confirmed Sign out.
 - **My insights:** filters posts by the current profile's user ID and reuses Community's cards/feed. Likes are shared between these screens. Post editing/deletion is not implemented.
 - **Edit profile:** PhotosPicker, add/change/remove photo, edit display name, Save/Cancel, and draft-discard protection. Saves target Firestore, not Firebase Auth name updates. JPEGs are resized to at most 512 pixels and compressed at 0.85 quality, then encoded into `photoBase64`; removal writes an empty string. The user confirmed the photo-saving issue is resolved on October 5; the exact cause/fix was not supplied. Profile listeners resolve authors for old posts; current-user cards also use the shared profile state.
-- **Settings:** appearance picker, Notifications, Accessibility, Face ID toggle, About QuietSpot. Simulator Face ID enrollment and the latest successfully authenticated email/password remain only in memory and reset when the app restarts. No password-confirmation sheet, Keychain storage, or disk persistence exists. A restored Firebase session without remembered credentials must sign out and sign in with a password before enabling Face ID. Map radius is controlled in Map, not Settings.
+- **Settings:** Notifications, Accessibility, Face ID toggle, About QuietSpot. Appearance follows the system automatically; the legacy `appearanceMode` preference is cleared on app launch. Simulator Face ID enrollment and the latest successfully authenticated email/password remain only in memory and reset when the app restarts. No password-confirmation sheet, Keychain storage, or disk persistence exists. A restored Firebase session without remembered credentials must sign out and sign in with a password before enabling Face ID. Map radius is controlled in Map, not Settings.
 - **Accessibility:** live VoiceOver On/Off status from SwiftUI's `accessibilityVoiceOverEnabled` environment value, system setup instructions, basic gestures, slider guidance, and a link to Apple's VoiceOver guide. No Firebase integration or separate app preference is needed.
 - **Map:** current location, proximity circle, and matching Firestore café pins. Radius is 1–10 km in 1 km steps, default 5 km. Without location, show a clearly labeled Colombo preview instead of pretending it is the user's location. Handle denied/approximate location. Map and café notifications share a `LocationProvider` owned by the signed-in tab shell; tracking can continue across tabs while the app is active and stops/clears its location when the app becomes inactive or the shell disappears.
 
@@ -176,7 +175,7 @@ Implemented accessibility refinements:
 - Shared café cards combine their content and hide redundant photo descriptions. Stat pills expose named noise, Wi-Fi, outlets, and crowd information rather than relying on color alone.
 - `CafePager` accepts an accessibility context so favorites, all cafés, and Explore controls identify their section and page. Page changes post an `AccessibilityNotification.Announcement` only when VoiceOver is enabled. Explore's filter control reports the active-filter count.
 - Favorite controls expose saved/selected state; like controls describe their action and use singular/plural counts. Native sliders retain adjustable behavior and report the map radius in kilometers with a descriptive hint.
-- The landing photo and appearance button are separate accessibility elements. Café details keep photo retry controls reachable instead of hiding them inside a combined photo description.
+- The landing photo has a descriptive accessibility label; the removed appearance button no longer adds a redundant control. Café details keep photo retry controls reachable instead of hiding them inside a combined photo description.
 
 For the project's Xcode 26.2 setup, Simulator testing uses Accessibility Inspector, not the complete iPhone VoiceOver speech/gesture experience:
 
@@ -435,7 +434,7 @@ Manual verification:
 - Consider a trusted latest-status summary for cafés to reduce per-café report listeners at scale. Any summary updater should be retry-safe and reject older reports overwriting newer status.
 - Map radius/search still operate locally over loaded cafés. Larger-area searches need a deliberate indexed/geoquery strategy, exact-distance filtering, and deduplication; geohashes are not currently stored. See [Firebase geoqueries](https://firebase.google.com/docs/firestore/solutions/geoqueries).
 - Café Base64 photos remain a deliberate small-prototype tradeoff. Profile photos use the same encoding approach; their saving issue was confirmed resolved by the user on October 5. A dedicated image provider can be considered later; there is no Cloud Storage integration now. Never bundle privileged provider secrets.
-- Appearance, notification preference, and map radius remain local/device-wide. Cloud preferences and account-specific settings are not implemented. Biometric enrollment remains separate from Firestore.
+- Notification preference and map radius remain local/device-wide. Appearance follows the device's system setting. Cloud preferences and account-specific settings are not implemented. Biometric enrollment remains separate from Firestore.
 - Local café stat notifications and in-memory duplicate suppression are implemented for active app use. Push tokens, FCM/APNs delivery, background jobs, and geofenced notifications remain unimplemented. This implementation does not monitor fresh café stats while the app is closed; no backend notification service is required for the current local feature.
 - Plan moderation/reporting, account deletion with related-data cleanup, abuse protection, and production biometric credential storage before release.
 

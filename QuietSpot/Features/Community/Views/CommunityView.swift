@@ -18,7 +18,7 @@ struct CommunityView: View {
                 intro: "Discover tips and experiences shared by the café community.",
                 notice: favorites.isEmpty ? "Save a café to your favorites to share an insight about it." : nil
             )
-            .navigationTitle("Community")
+            .tabScreenTitle("Community", systemImage: "person.3")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Share an insight", systemImage: "square.and.pencil") {

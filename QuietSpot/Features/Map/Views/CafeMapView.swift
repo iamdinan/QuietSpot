@@ -65,8 +65,7 @@ struct CafeMapView: View {
                 .padding(16)
                 .background(.regularMaterial)
             }
-            .navigationTitle("Map")
-            .navigationBarTitleDisplayMode(.inline)
+            .tabScreenTitle("Map", systemImage: "map")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {

@@ -39,7 +39,7 @@ struct HomeView: View {
             }
             .background(Color(uiColor: .systemGroupedBackground))
             .refreshable { await onRefresh?() }
-            .navigationTitle("Home")
+            .tabScreenTitle("Home", systemImage: "house")
             .navigationDestination(for: String.self) { cafeID in
                 if let index = cafes.firstIndex(where: { $0.id == cafeID }) {
                     CafeDetailsView(cafe: $cafes[index])

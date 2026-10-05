@@ -26,6 +26,14 @@ struct NotificationService {
             return
         }
         try Task.checkCancellation()
+        let content = Self.cafeUpdateContent(cafe: cafe, report: report)
+        let request = UNNotificationRequest(
+            identifier: "cafe-update.\(userID).\(cafe.id).\(report.id)",
+            content: content, trigger: nil
+        )
+        try await UNUserNotificationCenter.current().add(request)
+    }
+    static func cafeUpdateContent(cafe: CafeSnapshot, report: CafeCheckIn) -> UNMutableNotificationContent {
         let content = UNMutableNotificationContent()
         content.title = "New check-in at \(cafe.name)"
         let noise = switch report.noiseLevel {
@@ -38,11 +46,7 @@ struct NotificationService {
         content.body = "It’s \(noise) and \(report.crowd.lowercased()). Wi-Fi is \(wifi), and \(outlets)."
         content.sound = .default
         content.userInfo = ["cafeID": cafe.id]
-        let request = UNNotificationRequest(
-            identifier: "cafe-update.\(userID).\(cafe.id).\(report.id)",
-            content: content, trigger: nil
-        )
-        try await UNUserNotificationCenter.current().add(request)
+        return content
     }
 }
 

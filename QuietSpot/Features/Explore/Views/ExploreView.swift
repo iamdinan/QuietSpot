@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ExploreView: View {
     @Binding var cafes: [CafeSnapshot]
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var searchText = ""
     @State private var activeFilters = Set<PositiveCafeFilter>()
 
@@ -14,6 +15,7 @@ struct ExploreView: View {
             return matchesSearch && matchesFilters
         }
     }
+    private var iPadPageSize: Int { horizontalSizeClass == .regular ? 6 : 5 }
 
     var body: some View {
         NavigationStack {
@@ -27,7 +29,7 @@ struct ExploreView: View {
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
 
-                            CafePager(cafes: filteredCafes, pageSize: 5, accessibilityContext: "Explore cafés")
+                            CafePager(cafes: filteredCafes, pageSize: iPadPageSize, accessibilityContext: "Explore cafés")
                         }
                         .padding(20)
                         .readableContent()

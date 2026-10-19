@@ -2,12 +2,14 @@ import SwiftUI
 
 struct HomeView: View {
     @Binding var cafes: [CafeSnapshot]
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     var onRefresh: (() async -> Void)? = nil
 
     private var favorites: [CafeSnapshot] { cafes.filter(\.isFavorite) }
     private var latestFavorites: [CafeSnapshot] {
         Array(favorites.sorted(by: CafeSnapshot.latestFirst).prefix(3))
     }
+    private var iPadPageSize: Int { horizontalSizeClass == .regular ? 4 : 3 }
 
     var body: some View {
         NavigationStack {
@@ -18,10 +20,10 @@ struct HomeView: View {
                     VStack(alignment: .leading, spacing: 14) {
                         SectionHeader(title: "Your favorite cafés", subtitle: "Saved for this session", count: favorites.count)
                         if favorites.isEmpty {
-                            Text("Tap the heart on a café’s details page to save it.")
+                            Text("Tap the heart on a café's details page to save it.")
                                 .font(.subheadline).foregroundStyle(.secondary)
                         }
-                        CafePager(cafes: favorites, accessibilityContext: "Favorite cafés")
+                        CafePager(cafes: favorites, pageSize: iPadPageSize, accessibilityContext: "Favorite cafés")
                     }
 
                     VStack(alignment: .leading, spacing: 14) {
@@ -30,7 +32,7 @@ struct HomeView: View {
                             Text("No cafés to display yet.")
                                 .font(.subheadline).foregroundStyle(.secondary)
                         }
-                        CafePager(cafes: cafes.sorted(by: CafeSnapshot.latestFirst), accessibilityContext: "All cafés")
+                        CafePager(cafes: cafes.sorted(by: CafeSnapshot.latestFirst), pageSize: iPadPageSize, accessibilityContext: "All cafés")
                     }
                 }
                 .padding(20)

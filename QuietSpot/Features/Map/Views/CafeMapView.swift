@@ -34,7 +34,7 @@ struct CafeMapView: View {
                         .stroke(AppColor.accent.opacity(0.6), lineWidth: 2)
                 }
 
-                ForEach(nearbyCafes) { cafe in
+                ForEach(cafes) { cafe in
                     Annotation(cafe.name, coordinate: cafe.coordinate) {
                         Button {
                             path.append(cafe.id)

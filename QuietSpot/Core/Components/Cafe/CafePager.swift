@@ -23,57 +23,68 @@ struct CafePager: View {
         Array(cafes.dropFirst(selectedPage * pageSize).prefix(pageSize))
     }
 
+    private let topAnchorID = "cafePagerTop"
+
     var body: some View {
-        VStack(spacing: 12) {
-            LazyVGrid(
-                columns: horizontalSizeClass != .regular || dynamicTypeSize.isAccessibilitySize
-                    ? [GridItem(.flexible(), alignment: .top)]
-                    : [GridItem(.adaptive(minimum: 300), spacing: 16, alignment: .top)],
-                spacing: 16
-            ) {
-                ForEach(visibleCafes) { cafe in
-                    NavigationLink(value: cafe.id) {
-                        CafeStatusCard(cafe: cafe)
+        ScrollViewReader { proxy in
+            VStack(spacing: 12) {
+                Color.clear
+                    .frame(height: 0)
+                    .id(topAnchorID)
+
+                LazyVGrid(
+                    columns: horizontalSizeClass != .regular || dynamicTypeSize.isAccessibilitySize
+                        ? [GridItem(.flexible(), alignment: .top)]
+                        : [GridItem(.adaptive(minimum: 300), spacing: 16, alignment: .top)],
+                    spacing: 16
+                ) {
+                    ForEach(visibleCafes) { cafe in
+                        NavigationLink(value: cafe.id) {
+                            CafeStatusCard(cafe: cafe)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
+                }
+
+                if pageCount > 1 {
+                    HStack {
+                        Button {
+                            selectedPage -= 1
+                        } label: {
+                            Image(systemName: "chevron.left").frame(width: 44, height: 44)
+                        }
+                        .disabled(selectedPage == 0)
+                        .accessibilityLabel("Previous page of \(accessibilityContext)")
+                        .accessibilityValue("Page \(selectedPage + 1) of \(pageCount)")
+
+                        Spacer()
+                        Text("Page \(selectedPage + 1) of \(pageCount)")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+
+                        Button {
+                            selectedPage += 1
+                        } label: {
+                            Image(systemName: "chevron.right").frame(width: 44, height: 44)
+                        }
+                        .disabled(selectedPage == pageCount - 1)
+                        .accessibilityLabel("Next page of \(accessibilityContext)")
+                        .accessibilityValue("Page \(selectedPage + 1) of \(pageCount)")
+                    }
+                    .tint(AppColor.accent)
                 }
             }
-
-            if pageCount > 1 {
-                HStack {
-                    Button {
-                        selectedPage -= 1
-                    } label: {
-                        Image(systemName: "chevron.left").frame(width: 44, height: 44)
-                    }
-                    .disabled(selectedPage == 0)
-                    .accessibilityLabel("Previous page of \(accessibilityContext)")
-                    .accessibilityValue("Page \(selectedPage + 1) of \(pageCount)")
-
-                    Spacer()
-                    Text("Page \(selectedPage + 1) of \(pageCount)")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Spacer()
-
-                    Button {
-                        selectedPage += 1
-                    } label: {
-                        Image(systemName: "chevron.right").frame(width: 44, height: 44)
-                    }
-                    .disabled(selectedPage == pageCount - 1)
-                    .accessibilityLabel("Next page of \(accessibilityContext)")
-                    .accessibilityValue("Page \(selectedPage + 1) of \(pageCount)")
-                }
-                .tint(AppColor.accent)
+            .onChange(of: cafes.map(\.id)) {
+                selectedPage = min(selectedPage, pageCount - 1)
             }
-        }
-        .onChange(of: cafes.map(\.id)) {
-            selectedPage = min(selectedPage, pageCount - 1)
-        }
-        .onChange(of: selectedPage) {
-            if voiceOverEnabled {
-                AccessibilityNotification.Announcement("\(accessibilityContext), page \(selectedPage + 1) of \(pageCount)").post()
+            .onChange(of: selectedPage) {
+                withAnimation {
+                    proxy.scrollTo(topAnchorID, anchor: .top)
+                }
+                if voiceOverEnabled {
+                    AccessibilityNotification.Announcement("\(accessibilityContext), page \(selectedPage + 1) of \(pageCount)").post()
+                }
             }
         }
     }

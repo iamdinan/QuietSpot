@@ -52,7 +52,7 @@ struct CafeCheckInView: View {
             .safeAreaInset(edge: .bottom) {
                 VStack(spacing: 8) {
                     if viewModel.isSubmitting {
-                        ProgressView("Waiting for Firebase to confirm your check-in…")
+                        ProgressView("Sharing your café update…")
                             .font(.footnote)
                     }
                     PrimaryButton(viewModel.isSubmitting ? "Saving…" : "Submit check-in") {

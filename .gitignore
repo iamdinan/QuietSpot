@@ -1,0 +1,35 @@
+# macOS metadata
+.DS_Store
+._*
+.AppleDouble
+.LSOverride
+
+# Personal Xcode settings and UI state
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+
+# Xcode build output and test results
+build/
+DerivedData/
+*.xcarchive
+*.xcresult
+*.ipa
+*.dSYM
+*.dSYM.zip
+
+# Swift Package Manager generated files (keep Package.resolved tracked)
+.build/
+.swiftpm/
+
+# Local environment overrides
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Editor temporary files
+*.swp
+*.swo
+*~

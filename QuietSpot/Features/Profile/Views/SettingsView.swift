@@ -8,6 +8,12 @@ struct SettingsView: View {
         Form {
             Section("Preferences") {
                 NavigationLink {
+                    AppearanceSettingsView()
+                } label: {
+                    Label("Appearance", systemImage: "circle.lefthalf.filled")
+                }
+
+                NavigationLink {
                     NotificationSettingsView()
                 } label: {
                     Label("Notifications", systemImage: "bell")

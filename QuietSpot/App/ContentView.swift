@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @AppStorage("hasCompletedIntroduction") private var hasCompletedIntroduction = false
     @State private var navigationPath = NavigationPath()
     @State private var authentication = AuthenticationViewModel()
 
@@ -23,7 +24,9 @@ struct ContentView: View {
                     .id(userID)
             } else {
                 NavigationStack(path: $navigationPath) {
-                    WelcomeView(
+                    OnboardingView(
+                        startAtWelcome: hasCompletedIntroduction,
+                        onIntroductionCompleted: { hasCompletedIntroduction = true },
                         onSignIn: {
                             navigationPath.append(AppRoute.signIn)
                         }

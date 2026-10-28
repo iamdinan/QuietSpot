@@ -7,6 +7,7 @@ struct CafeInsightFeed: View {
     var onlyCurrentUser = false
     let intro: String
     var notice: String? = nil
+    @State private var postToDelete: CafeInsight?
 
     private var visibleInsights: [CafeInsight] {
         community.insights
@@ -52,7 +53,13 @@ struct CafeInsightFeed: View {
                     if let cafe = cafes.first(where: { $0.id == insight.cafeID }) {
                         CafeInsightCard(insight: insight, cafe: cafe, profile: profile, onToggleLike: {
                             Task { await community.toggleLike(insight) }
-                        }, isLikeEnabled: !NetworkStatus.shared.isOffline && community.loadedLikeIDs.contains(insight.id) && !community.savingLikeIDs.contains(insight.id))
+                        }, isLikeEnabled: !NetworkStatus.shared.isOffline
+                            && community.loadedLikeIDs.contains(insight.id)
+                            && !community.savingLikeIDs.contains(insight.id)
+                            && !community.deletingPostIDs.contains(insight.id),
+                            onDelete: insight.authorID == profile.id ? { postToDelete = insight } : nil,
+                            isDeleteEnabled: !NetworkStatus.shared.isOffline && !community.savingLikeIDs.contains(insight.id),
+                            isDeleting: community.deletingPostIDs.contains(insight.id))
                     }
                 }
             }
@@ -60,11 +67,23 @@ struct CafeInsightFeed: View {
             .readableContent()
         }
         .background(Color(uiColor: .systemGroupedBackground))
+        .confirmationDialog("Delete this post?", isPresented: Binding(
+            get: { postToDelete != nil },
+            set: { if !$0 { postToDelete = nil } }
+        ), titleVisibility: .visible, presenting: postToDelete) { insight in
+            Button("Delete post", role: .destructive) {
+                postToDelete = nil
+                Task { await community.delete(insight) }
+            }
+            Button("Cancel", role: .cancel) { postToDelete = nil }
+        } message: { _ in
+            Text("This post will be permanently removed from Community and My Insights.")
+        }
         .alert("Community update", isPresented: Binding(
             get: { community.actionError != nil },
             set: { if !$0 { community.actionError = nil } }
         )) {
-            Button("Try again") { community.actionError = nil; community.retry() }
+            Button("Reload posts") { community.actionError = nil; community.retry() }
             Button("OK", role: .cancel) { community.actionError = nil }
         } message: {
             Text(community.actionError ?? "Please try again.")

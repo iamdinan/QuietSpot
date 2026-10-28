@@ -6,6 +6,9 @@ struct CafeInsightCard: View {
     let profile: UserProfile
     let onToggleLike: () -> Void
     var isLikeEnabled = true
+    var onDelete: (() -> Void)? = nil
+    var isDeleteEnabled = true
+    var isDeleting = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -49,8 +52,25 @@ struct CafeInsightCard: View {
                             timestamp
                         }
                     }
+                    .accessibilityElement(children: .combine)
+
+                    Spacer(minLength: 0)
+                    if let onDelete {
+                        if isDeleting {
+                            ProgressView("Deleting post…")
+                                .font(.caption)
+                        } else {
+                            Menu {
+                                Button("Delete post", systemImage: "trash", role: .destructive, action: onDelete)
+                            } label: {
+                                Image(systemName: "ellipsis")
+                                    .frame(minWidth: 44, minHeight: 44)
+                            }
+                            .disabled(!isDeleteEnabled)
+                            .accessibilityLabel("Post options")
+                        }
+                    }
                 }
-                .accessibilityElement(children: .combine)
 
                 Text(insight.text)
                     .font(.body)

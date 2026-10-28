@@ -16,13 +16,7 @@ struct OnboardingPreview: View {
                 .foregroundStyle(AppColor.accent)
 
             if kind == .discovery {
-                Image("CafeHero")
-                    .resizable()
-                    .scaledToFill()
-                    .frame(height: 170)
-                    .clipped()
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
-                    .accessibilityHidden(true)
+                cafeImage
 
                 Text("Your next quiet corner")
                     .font(.title3.bold())
@@ -63,13 +57,7 @@ struct OnboardingPreview: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else {
-                Image("CafeHero")
-                    .resizable()
-                    .scaledToFill()
-                    .frame(height: 170)
-                    .clipped()
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
-                    .accessibilityHidden(true)
+                cafeImage
                 Label("A place for you", systemImage: "person.crop.circle")
                     .font(.title3.bold())
                     .foregroundStyle(.primary)
@@ -87,6 +75,16 @@ struct OnboardingPreview: View {
         }
         .padding(12)
         .background(AppColor.accent.opacity(0.07), in: RoundedRectangle(cornerRadius: 36))
+    }
+
+    private var cafeImage: some View {
+        Image("CafeHero")
+            .resizable()
+            .scaledToFill()
+            .frame(height: 170)
+            .clipped()
+            .clipShape(RoundedRectangle(cornerRadius: 18))
+            .accessibilityHidden(true)
     }
 
     private var title: String {

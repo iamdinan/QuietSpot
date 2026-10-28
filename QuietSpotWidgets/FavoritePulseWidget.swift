@@ -144,6 +144,14 @@ struct FavoritePulseView: View {
         .accessibilityElement(children: .combine)
     }
 
+    private var pillVerticalPadding: CGFloat {
+        switch family {
+        case .systemMedium: 2
+        case .systemLarge: 3
+        default: 4
+        }
+    }
+
     private func pill(_ title: String, symbol: String, factor: String, fullValue: String, positive: Bool, moderate: Bool = false) -> some View {
         let tint: Color = moderate
             ? (colorScheme == .dark ? Color(red: 1, green: 0.73, blue: 0.32) : Color(red: 0.52, green: 0.27, blue: 0.02))
@@ -154,7 +162,7 @@ struct FavoritePulseView: View {
             .font(.system(size: family == .systemSmall ? 10 : 11, weight: .semibold))
             .lineLimit(1).minimumScaleFactor(0.75)
             .foregroundStyle(tint)
-            .padding(.horizontal, 5).padding(.vertical, family == .systemMedium ? 2 : family == .systemLarge ? 3 : 4)
+            .padding(.horizontal, 5).padding(.vertical, pillVerticalPadding)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(tint.opacity(0.12), in: Capsule())
             .accessibilityLabel("\(factor): \(fullValue)")

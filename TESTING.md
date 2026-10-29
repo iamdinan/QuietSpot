@@ -62,6 +62,7 @@ Verified on October 5, 2026 with Xcode 26.2 on the iPhone 17 Pro simulator runni
 These require system services or a configured Firebase backend and are not mocked by this unit suite:
 
 - Authentication: create/sign in/reset/sign out, restore a session and verify Firestore rules for different accounts.
+- Community deletion: with two accounts, verify only the author sees the post menu in Community and My Insights. Cancel leaves the post unchanged; confirm removes it from both feeds and another signed-in device. Check offline disabling, permission-denied failures retaining the post, repeated taps, concurrent likes/deletion, and signing out during deletion. Verify a direct delete request by the other account is rejected by server rules. See [backend requirements](docs/community-post-deletion.md).
 - Offline: load data online, keep the session signed in, disconnect the Mac and relaunch the simulator. Check cached photos/profiles/favourites/reports/posts, disabled saving actions and reconnect recovery.
 - Notifications: allow notifications and location access, favourite a café inside the radius, keep the app active and submit a **new** check-in with at least one changed stat. Confirm a banner; identical stats intentionally remain silent. Test disabled/out-of-radius cases too.
 - Widgets and Siri: provision the shared App Group, add the widget, sync favourites, and execute both App Shortcuts. Verify account clearing, foreground/background behaviour and spoken output.

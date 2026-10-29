@@ -50,6 +50,24 @@ final class CommunityService {
         try await reference.setData(data)
     }
 
+    func delete(postID: String, userID: String) async throws {
+        try NetworkStatus.shared.requireConnection()
+        guard Auth.auth().currentUser?.uid == userID else { throw CocoaError(.userCancelled) }
+        let post = posts.document(postID)
+        _ = try await Firestore.firestore().runTransaction { transaction, errorPointer in
+            do {
+                let snapshot = try transaction.getDocument(post)
+                // Already removed posts need no further action.
+                guard snapshot.exists else { return nil }
+                guard snapshot.get("authorID") as? String == userID else {
+                    throw CocoaError(.fileWriteNoPermission)
+                }
+                transaction.deleteDocument(post)
+            } catch { errorPointer?.pointee = error as NSError }
+            return nil
+        }
+    }
+
     func observeLike(postID: String, userID: String, onChange: @escaping (Result<Bool, Error>) -> Void) -> ListenerRegistration {
         posts.document(postID).collection("likes").document(userID)
             .addSnapshotListener(includeMetadataChanges: true) { snapshot, error in

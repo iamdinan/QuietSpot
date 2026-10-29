@@ -100,10 +100,10 @@ struct CafeDetailsView: View {
             }
             .presentationSizing(.form)
         }
-        .alert("Check-in saved", isPresented: $showsConfirmation) {
+        .alert("Thanks for the update!", isPresented: $showsConfirmation) {
             Button("Done", role: .cancel) {}
         } message: {
-            Text("Your check-in at \(cafe.name) has been saved to Firebase.")
+            Text("Your update for \(cafe.name) has been shared. You’re helping others find the right café.")
         }
     }
 

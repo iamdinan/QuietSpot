@@ -67,7 +67,7 @@ struct FavoritePulseView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: family == .systemSmall ? 6 : 10) {
+        VStack(alignment: .leading, spacing: family == .systemLarge ? 8 : 6) {
             HStack(spacing: 5) {
                 Image(systemName: "waveform.path")
                 Text(family == .systemSmall ? "Café pulse" : "Favorite café pulse")
@@ -86,9 +86,10 @@ struct FavoritePulseView: View {
                 }
                 Spacer(minLength: 0)
                 if family != .systemSmall {
-                    Text("Last synced from QuietSpot · Open to refresh")
+                    Text(family == .systemLarge ? "Open QuietSpot to refresh" : "Last synced from QuietSpot · Open to refresh")
                         .font(.system(size: 10)).foregroundStyle(.secondary)
                         .lineLimit(1).minimumScaleFactor(0.8)
+                        .frame(maxWidth: .infinity, alignment: family == .systemLarge ? .center : .leading)
                 }
             } else {
                 Spacer(minLength: 0)
@@ -100,12 +101,12 @@ struct FavoritePulseView: View {
     }
 
     private func cafeRow(_ cafe: PulseWidgetCafe) -> some View {
-        VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: family == .systemMedium ? 4 : 5) {
             HStack(spacing: 8) {
                 if family == .systemMedium {
                     Image(systemName: "cup.and.saucer.fill")
                         .font(.title2).foregroundStyle(accent)
-                        .frame(width: 42, height: 42)
+                        .frame(width: 38, height: 38)
                         .background(accent.opacity(0.10), in: RoundedRectangle(cornerRadius: 12))
                         .accessibilityHidden(true)
                 }
@@ -143,6 +144,14 @@ struct FavoritePulseView: View {
         .accessibilityElement(children: .combine)
     }
 
+    private var pillVerticalPadding: CGFloat {
+        switch family {
+        case .systemMedium: 2
+        case .systemLarge: 3
+        default: 4
+        }
+    }
+
     private func pill(_ title: String, symbol: String, factor: String, fullValue: String, positive: Bool, moderate: Bool = false) -> some View {
         let tint: Color = moderate
             ? (colorScheme == .dark ? Color(red: 1, green: 0.73, blue: 0.32) : Color(red: 0.52, green: 0.27, blue: 0.02))
@@ -153,7 +162,7 @@ struct FavoritePulseView: View {
             .font(.system(size: family == .systemSmall ? 10 : 11, weight: .semibold))
             .lineLimit(1).minimumScaleFactor(0.75)
             .foregroundStyle(tint)
-            .padding(.horizontal, 5).padding(.vertical, 4)
+            .padding(.horizontal, 5).padding(.vertical, pillVerticalPadding)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(tint.opacity(0.12), in: Capsule())
             .accessibilityLabel("\(factor): \(fullValue)")

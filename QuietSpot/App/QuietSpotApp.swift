@@ -10,6 +10,8 @@ import SwiftUI
 
 @main
 struct QuietSpotApp: App {
+    @AppStorage(AppAppearance.storageKey) private var appearance: AppAppearance = .system
+
     private static var isRunningUnitTests: Bool {
         #if DEBUG
         ProcessInfo.processInfo.environment["QUIETSPOT_UNIT_TESTS"] == "1"
@@ -34,6 +36,7 @@ struct QuietSpotApp: App {
                 Color.clear
             } else {
                 ContentView()
+                    .preferredColorScheme(appearance.colorScheme)
             }
         }
     }

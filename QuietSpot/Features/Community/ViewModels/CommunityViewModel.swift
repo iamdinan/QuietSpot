@@ -11,6 +11,7 @@ final class CommunityViewModel {
     var actionError: String?
     private(set) var savingLikeIDs: Set<String> = []
     private(set) var loadedLikeIDs: Set<String> = []
+    private(set) var deletingPostIDs: Set<String> = []
     @ObservationIgnored private var userID: String?
     @ObservationIgnored private var generation = UUID()
     @ObservationIgnored private let service = CommunityService()
@@ -37,6 +38,7 @@ final class CommunityViewModel {
         likedPostIDs.removeAll()
         loadedLikeIDs.removeAll()
         savingLikeIDs.removeAll()
+        deletingPostIDs.removeAll()
         if self.userID != userID { insights = [] }
         self.userID = userID
         generation = UUID()
@@ -75,7 +77,8 @@ final class CommunityViewModel {
     }
 
     func toggleLike(_ insight: CafeInsight) async {
-        guard let userID, loadedLikeIDs.contains(insight.id), !savingLikeIDs.contains(insight.id) else { return }
+        guard let userID, loadedLikeIDs.contains(insight.id), !savingLikeIDs.contains(insight.id),
+              !deletingPostIDs.contains(insight.id) else { return }
         let generation = generation
         savingLikeIDs.insert(insight.id)
         defer { if self.generation == generation { savingLikeIDs.remove(insight.id) } }
@@ -84,6 +87,23 @@ final class CommunityViewModel {
         } catch {
             guard self.generation == generation else { return }
             actionError = "Couldn’t update your like. \(error.localizedDescription)"
+        }
+    }
+
+    func delete(_ insight: CafeInsight) async {
+        guard let userID, insight.authorID == userID,
+              !deletingPostIDs.contains(insight.id), !savingLikeIDs.contains(insight.id) else { return }
+        let generation = generation
+        deletingPostIDs.insert(insight.id)
+        defer { if self.generation == generation { deletingPostIDs.remove(insight.id) } }
+        do {
+            try await service.delete(postID: insight.id, userID: userID)
+            guard self.generation == generation else { return }
+            insights.removeAll { $0.id == insight.id }
+            observeRelatedData(userID: userID, generation: generation)
+        } catch {
+            guard self.generation == generation else { return }
+            actionError = "Couldn’t delete your post. Check your connection and try again."
         }
     }
 

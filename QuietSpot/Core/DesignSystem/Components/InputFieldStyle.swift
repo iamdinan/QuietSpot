@@ -1,7 +1,4 @@
-//
-//  InputFieldStyle.swift
-//  QuietSpot
-//
+// Shared styling for text inputs in the account forms.
 
 import SwiftUI
 

@@ -1,7 +1,4 @@
-//
-//  PrimaryButton.swift
-//  QuietSpot
-//
+// Main filled button style used for important actions.
 
 import SwiftUI
 

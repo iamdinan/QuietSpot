@@ -1,3 +1,5 @@
+// Firestore shape of a community post before conversion for the UI.
+
 import FirebaseFirestore
 
 struct CafeInsightDocument: Decodable {

@@ -1,3 +1,5 @@
+// Checks the community post snapshot saved for Siri.
+
 import Foundation
 import Testing
 @testable import QuietSpot

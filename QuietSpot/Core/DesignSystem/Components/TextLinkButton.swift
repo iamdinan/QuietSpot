@@ -1,7 +1,4 @@
-//
-//  TextLinkButton.swift
-//  QuietSpot
-//
+// Text-style button shared by account and settings screens.
 
 import SwiftUI
 

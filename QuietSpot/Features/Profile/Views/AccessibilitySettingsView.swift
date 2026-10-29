@@ -1,3 +1,5 @@
+// Shows accessibility status and device setup guidance.
+
 import SwiftUI
 
 struct AccessibilitySettingsView: View {

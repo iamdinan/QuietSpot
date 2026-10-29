@@ -1,3 +1,5 @@
+// Checks widget ordering, state mapping, and saved snapshots.
+
 import Foundation
 import Testing
 @testable import QuietSpot

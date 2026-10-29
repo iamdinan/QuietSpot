@@ -1,3 +1,5 @@
+// Introduces the app and leads the user to sign in.
+
 import SwiftUI
 
 struct OnboardingView: View {

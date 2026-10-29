@@ -1,3 +1,5 @@
+// Shows a saved profile photo or a fallback person icon.
+
 import SwiftUI
 
 struct ProfileAvatar: View {

@@ -1,7 +1,4 @@
-//
-//  ForgotPasswordView.swift
-//  QuietSpot
-//
+// Password reset form for requesting a recovery email.
 
 import SwiftUI
 

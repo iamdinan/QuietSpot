@@ -1,7 +1,4 @@
-//
-//  CafeSnapshot.swift
-//  QuietSpot
-//
+// Cafe data prepared for the UI, combining metadata with recent reports.
 
 import Foundation
 import CoreLocation
@@ -43,6 +40,7 @@ struct CafeSnapshot: Identifiable {
         return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
     }
 
+    // The first report supplies the status shown on cards and in filters.
     mutating func updateCheckIns(_ checkIns: [CafeCheckIn]) {
         checkInHistory = Array(checkIns.prefix(3))
         let latest = checkInHistory?.first

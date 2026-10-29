@@ -1,3 +1,5 @@
+// Form for changing the display name and profile photo.
+
 import SwiftUI
 import PhotosUI
 

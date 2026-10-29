@@ -1,3 +1,5 @@
+// Cafe summary card used in photo lists and the favorite pulse.
+
 import SwiftUI
 
 struct CafeStatusCard: View {

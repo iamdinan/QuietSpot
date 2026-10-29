@@ -1,3 +1,5 @@
+// Splits cafe cards into pages and adapts their grid to screen width.
+
 import SwiftUI
 
 struct CafePager: View {
@@ -19,6 +21,7 @@ struct CafePager: View {
         max(1, (cafes.count + pageSize - 1) / pageSize)
     }
 
+    // Slice the current page before the grid lays out its cards.
     private var visibleCafes: [CafeSnapshot] {
         Array(cafes.dropFirst(selectedPage * pageSize).prefix(pageSize))
     }
@@ -75,6 +78,7 @@ struct CafePager: View {
                     .tint(AppColor.accent)
                 }
             }
+            // A refresh may leave the current page beyond the end of the list.
             .onChange(of: cafes.map(\.id)) {
                 selectedPage = min(selectedPage, pageCount - 1)
             }

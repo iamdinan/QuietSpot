@@ -1,3 +1,5 @@
+// Siri shortcut that reads the latest saved community post.
+
 import AppIntents
 
 struct ReadLatestCommunityPostIntent: AppIntent {

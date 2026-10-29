@@ -1,7 +1,4 @@
-//
-//  CafeThumbnail.swift
-//  QuietSpot
-//
+// Small reusable cafe photo with a fixed size.
 
 import SwiftUI
 

@@ -1,3 +1,5 @@
+// Searches cafes by name or area and combines the selected status filters.
+
 import SwiftUI
 
 struct ExploreView: View {
@@ -6,6 +8,7 @@ struct ExploreView: View {
     @State private var searchText = ""
     @State private var activeFilters = Set<PositiveCafeFilter>()
 
+    // All selected filters must match the cafe's latest report.
     private var filteredCafes: [CafeSnapshot] {
         cafes.filter { cafe in
             let matchesSearch = searchText.isEmpty

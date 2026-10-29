@@ -1,3 +1,5 @@
+// Profile details shown in the account screen and on community posts.
+
 import Foundation
 
 struct UserProfile {

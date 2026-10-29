@@ -1,3 +1,5 @@
+// Checks the saved-data messages spoken by both Siri shortcuts.
+
 import Foundation
 import Testing
 @testable import QuietSpot

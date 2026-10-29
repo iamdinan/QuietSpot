@@ -1,3 +1,5 @@
+// Consistent navigation titles for the main tabs.
+
 import SwiftUI
 
 private struct TabScreenTitle: ViewModifier {

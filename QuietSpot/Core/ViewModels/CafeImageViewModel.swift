@@ -1,3 +1,5 @@
+// Loads a cafe photo for a view and exposes loading or retry state.
+
 import Observation
 import UIKit
 

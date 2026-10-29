@@ -1,3 +1,5 @@
+// Checks safe, helpful account error messages.
+
 import FirebaseAuth
 import Foundation
 import Testing

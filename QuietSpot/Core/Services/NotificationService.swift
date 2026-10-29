@@ -1,3 +1,5 @@
+// Requests notification permission and sends local cafe update alerts.
+
 import OSLog
 import UserNotifications
 

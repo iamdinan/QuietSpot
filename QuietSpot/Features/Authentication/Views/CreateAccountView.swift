@@ -1,7 +1,4 @@
-//
-//  CreateAccountView.swift
-//  QuietSpot
-//
+// Registration form that passes validated input to the auth view model.
 
 import SwiftUI
 

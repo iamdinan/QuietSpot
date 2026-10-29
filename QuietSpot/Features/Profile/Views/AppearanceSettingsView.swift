@@ -1,3 +1,5 @@
+// Lets users choose system, light, or dark appearance.
+
 import SwiftUI
 
 struct AppearanceSettingsView: View {

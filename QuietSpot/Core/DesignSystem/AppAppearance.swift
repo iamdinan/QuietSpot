@@ -1,3 +1,5 @@
+// Maps the saved appearance choice to a SwiftUI color scheme.
+
 import SwiftUI
 
 enum AppAppearance: String, CaseIterable, Identifiable {

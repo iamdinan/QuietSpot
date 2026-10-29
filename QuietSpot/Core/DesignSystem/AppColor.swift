@@ -1,7 +1,4 @@
-//
-//  AppColor.swift
-//  QuietSpot
-//
+// Colors shared across screens and reusable controls.
 
 import SwiftUI
 

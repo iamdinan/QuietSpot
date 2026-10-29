@@ -1,3 +1,5 @@
+// Collects the four cafe conditions for a new check-in.
+
 import SwiftUI
 
 struct CafeCheckInView: View {

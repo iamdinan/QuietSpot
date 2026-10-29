@@ -1,3 +1,5 @@
+// Reads and writes the signed-in user profile and favorite cafes.
+
 import FirebaseFirestore
 import Foundation
 
@@ -7,6 +9,7 @@ struct UserDataService {
         Firestore.firestore().collection("users").document(id)
     }
 
+    // A transaction avoids replacing a profile that already exists.
     func createProfileIfNeeded(userID: String, displayName: String) async throws {
         try NetworkStatus.shared.requireConnection()
         let reference = user(userID)

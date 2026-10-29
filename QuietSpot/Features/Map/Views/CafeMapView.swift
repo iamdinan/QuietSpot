@@ -1,3 +1,5 @@
+// Shows cafe pins and the user location with a selectable search radius.
+
 import SwiftUI
 import MapKit
 
@@ -16,6 +18,7 @@ struct CafeMapView: View {
         )
     )
 
+    // Distance is in meters, while the saved radius is in kilometers.
     private var nearbyCafes: [CafeSnapshot] {
         guard let userLocation = location.currentLocation else { return cafes }
         return cafes.filter {
@@ -135,6 +138,7 @@ struct CafeMapView: View {
         }
     }
 
+    // Widen the camera with the radius so the whole nearby area stays visible.
     private func centerOnUser() {
         guard let userLocation = location.currentLocation else { return }
         camera = .region(MKCoordinateRegion(

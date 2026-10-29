@@ -1,3 +1,5 @@
+// Siri shortcut that reads the saved favorite cafe pulse.
+
 import AppIntents
 
 struct CheckFavoriteCafeIntent: AppIntent {

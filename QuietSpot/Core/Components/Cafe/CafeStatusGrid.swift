@@ -1,3 +1,5 @@
+// Displays the four cafe conditions and their loading or empty states.
+
 import SwiftUI
 
 struct CafeStatusGrid: View {
@@ -18,6 +20,7 @@ struct CafeStatusGrid: View {
         statusError = cafe.statusErrorMessage
     }
 
+    // A saved report always has values, unlike a cafe still waiting for its listener.
     init(checkIn: CafeCheckIn) {
         noiseLevel = checkIn.noiseLevel
         wifi = checkIn.wifi

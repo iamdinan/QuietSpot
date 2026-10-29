@@ -1,3 +1,5 @@
+// Shows the favorite pulse and paged lists of saved and available cafes.
+
 import SwiftUI
 
 struct HomeView: View {

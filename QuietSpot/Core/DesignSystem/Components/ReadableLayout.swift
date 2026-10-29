@@ -1,3 +1,5 @@
+// Limits wide content so forms and lists stay readable on iPad.
+
 import SwiftUI
 
 extension View {

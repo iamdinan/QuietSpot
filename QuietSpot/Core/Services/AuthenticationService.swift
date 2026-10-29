@@ -1,3 +1,5 @@
+// Wraps Firebase sign-in, account creation, reset, and session changes.
+
 import FirebaseAuth
 import Foundation
 

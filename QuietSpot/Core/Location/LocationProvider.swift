@@ -1,3 +1,5 @@
+// Tracks permission and recent user location for the map and alerts.
+
 import CoreLocation
 import Combine
 

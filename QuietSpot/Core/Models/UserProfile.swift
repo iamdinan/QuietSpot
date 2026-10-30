@@ -4,8 +4,8 @@ import Foundation
 
 struct UserProfile {
     let id: String
-    var displayName = "You"
-    var photoData: Data? = nil
+    var displayName: String
+    var photoData: Data?
 
     init(id: String = "preview-user", displayName: String = "You", photoData: Data? = nil) {
         self.id = id

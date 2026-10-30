@@ -4,18 +4,12 @@ import SwiftUI
 
 struct CafePager: View {
     let cafes: [CafeSnapshot]
+    let pageSize: Int
+    let accessibilityContext: String
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedPage = 0
-    private let pageSize: Int
-    private let accessibilityContext: String
-
-    init(cafes: [CafeSnapshot], pageSize: Int = 3, accessibilityContext: String = "Cafés") {
-        self.cafes = cafes
-        self.pageSize = pageSize
-        self.accessibilityContext = accessibilityContext
-    }
 
     private var pageCount: Int {
         max(1, (cafes.count + pageSize - 1) / pageSize)

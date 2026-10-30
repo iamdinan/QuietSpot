@@ -24,7 +24,7 @@ QuietSpot/
 │   ├── Features/                 # Screen-specific views and view models
 │   │   ├── Welcome/              # Welcome screen
 │   │   ├── Authentication/       # Sign-in, registration, and password reset
-│   │   ├── Home/                 # Favorite café pulse and café browsing
+│   │   ├── Home/                 # Favorite café pulse and compact café carousels
 │   │   ├── Explore/              # Search and filters
 │   │   ├── CafeDetails/          # Café details and check-in form
 │   │   ├── Community/            # Insight feed and post composer
@@ -35,11 +35,20 @@ QuietSpot/
 ├── Shared/                       # Shared widget data and time formatting
 ├── Config/                       # App/widget entitlements and widget settings
 ├── QuietSpotTests/               # Swift Testing unit tests
+├── docs/                         # Backend integration requirements
 ├── TESTING.md                    # Test commands and manual checks
 └── project.md                    # Project overview
 ```
 
 Views display the UI, view models manage state, and services handle data and system operations. Feature-specific code stays in `Features`; reusable code belongs in `Core`.
+
+## Setup and verification
+
+Open `QuietSpot.xcodeproj` and select the shared **QuietSpot** scheme. Resolve the Firebase packages and use an iOS 26.2-or-newer simulator or a provisioned device. The app's bundled `GoogleService-Info.plist` must match the target bundle ID; enable email/password authentication and configure the Firestore data and access rules for the connected Firebase project.
+
+`AuthenticationService.start()` calls `FirebaseConfiguration.configure()` before restoring the session. Configuration failures appear in the account flow. The initial `FirebaseApp.app()` check can log that the default app is not yet configured before configuration proceeds; that log alone does not establish a startup failure.
+
+App Group entitlements must match `PulseWidgetStore.appGroup` for shared widget and Siri data. See [TESTING.md](TESTING.md) for commands, test isolation, and manual integration checks. This repository does not contain deployed Firestore rules or backend cleanup jobs; [community deletion requirements](docs/community-post-deletion.md) describe the backend behavior to verify.
 
 ## Features
 
@@ -54,13 +63,15 @@ The main tabs are **Home, Explore, Community, Map, and Profile**.
 ### Home and favorites
 
 - The **Favorite café pulse** shows the latest conditions from up to three favorite cafés, ordered by their latest check-ins.
-- Separate **Your favorite cafés** and **All cafés** sections display photo cards with three cafés per page.
+- Separate **Your favorite cafés** and **Near you** sections display compact horizontal carousels. Cards show the café photo, name, area, noise status, and latest check-in time when available; tap a card for the full details and four conditions.
+- Cards snap into place while scrolling, leave part of the next card visible, and share the tallest card's height within each carousel. Text can wrap at accessibility sizes.
+- **Near you** includes cafés within the user's saved map radius, ordered by latest check-in. It updates with location and radius changes. Without a location it shows guidance and a location action; an empty radius shows a message suggesting a larger radius in Map.
 - Save or remove favorites using the heart on café details. Favorites belong to the signed-in account and are shared across screens.
 - Pull to refresh café metadata. Open any café card to view its details.
 
 ### Explore
 
-- Search by café name or area and browse results with five cafés per page.
+- Search by café name or area and browse full photo/status cards with five cafés per page in compact layouts or six in regular-width layouts.
 - Filter for **Quiet**, **Strong Wi-Fi**, **Outlets free**, and **Uncrowded**. Selected filters combine, so a café must satisfy all of them.
 - Show an empty-results state when no cafés match; clear filters to broaden the results.
 
@@ -76,19 +87,20 @@ The main tabs are **Home, Explore, Community, Map, and Profile**.
 - Browse insights from newest to oldest, with the author's name/photo, café, post age, and post text.
 - Share an insight about a favorite café. Posts must contain nonblank text and stay within 2,000 characters.
 - Like or unlike posts; each account can have one like per post, and counts update through Firestore.
-- Preserve drafts when sharing fails and ask before discarding them. **My insights** in Profile shows the current user's posts; post editing and deletion are not implemented.
+- Preserve drafts when sharing fails and ask before discarding them. **My insights** in Profile shows the current user's posts.
+- Authors can delete their own posts through the post menu after confirmation. Failed deletions keep the post visible and show an error. Post editing is not implemented. Backend access and cleanup requirements are documented [here](docs/community-post-deletion.md).
 
 ### Map and nearby cafés
 
 - View café pins and open café details from the map. Center the map on your location when permission is available.
-- Adjust the radius from **1–10 km**, with a **5 km** default. The proximity circle and visible café pins follow the selected radius.
+- Adjust the radius from **1–10 km**, with a **5 km** default. The proximity circle, nearby count, Home's **Near you** list, and notification eligibility use the same saved radius. The map continues to show pins for all loaded cafés.
 - Show a labeled Colombo preview while location is unavailable, with feedback for denied permission or approximate location.
 
 ### Profile and settings
 
 - Edit your display name and add, replace, or remove a profile photo using the system photo picker.
 - Updated names and photos appear on community posts, including previously shared insights. Unsaved profile changes require discard confirmation.
-- Settings includes notification preferences, VoiceOver status and setup guidance, the Face ID prototype toggle, and app information.
+- Settings includes system/light/dark appearance, notification preferences, VoiceOver status and setup guidance, the Face ID prototype toggle, and app information.
 
 ### Café update notifications
 
@@ -104,9 +116,9 @@ The main tabs are **Home, Explore, Community, Map, and Profile**.
 
 ### iPad layouts and accessibility
 
-- Center text, forms, and feeds at readable widths. Café cards use adaptive columns on wider screens and a single column in compact layouts or at accessibility text sizes.
+- Center text, forms, and feeds at readable widths. Explore's café cards use adaptive columns on wider screens and a single column in compact layouts or at accessibility text sizes. Home uses horizontal carousels with wider cards at accessibility text sizes.
 - Use consistently cropped photos, a full-width welcome image, and focused form-sized editing sheets.
-- Follow system light/dark appearance and support Dynamic Type and VoiceOver through semantic text, headings, labels, and status descriptions.
+- Default to system light/dark appearance, with optional Light or Dark overrides in Settings. Support Dynamic Type and VoiceOver through semantic text, headings, labels, and status descriptions.
 
 ### Widgets and Siri shortcuts
 

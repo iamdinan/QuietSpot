@@ -17,7 +17,7 @@ struct MainTabView: View {
     var body: some View {
         @Bindable var cafeData = cafeViewModel
         TabView {
-            HomeView(cafes: $cafeData.cafes, onRefresh: { await cafeViewModel.load() })
+            HomeView(cafes: $cafeData.cafes, location: location, onRefresh: { await cafeViewModel.load() })
                 .tabItem {
                     Label("Home", systemImage: "house")
                 }

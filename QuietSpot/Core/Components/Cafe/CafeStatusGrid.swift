@@ -80,7 +80,7 @@ struct CafeStatusGrid: View {
     }
 }
 
-private struct CompactStatusPill: View {
+struct CompactStatusPill: View {
     let title: String
     let icon: String
     let tint: Color
@@ -99,7 +99,7 @@ private struct CompactStatusPill: View {
     }
 }
 
-private extension NoiseLevel {
+extension NoiseLevel {
     var tint: Color {
         switch self {
         case .quiet: AppColor.positive

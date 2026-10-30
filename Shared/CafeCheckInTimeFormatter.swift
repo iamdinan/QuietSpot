@@ -1,3 +1,5 @@
+// Formats a check-in date as a short, readable age.
+
 import Foundation
 
 enum CafeCheckInTimeFormatter {

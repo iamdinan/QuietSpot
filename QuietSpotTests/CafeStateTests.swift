@@ -1,3 +1,5 @@
+// Checks recent report state and cafe sorting.
+
 import Foundation
 import Testing
 @testable import QuietSpot

@@ -1,24 +1,21 @@
+// Splits cafe cards into pages and adapts their grid to screen width.
+
 import SwiftUI
 
 struct CafePager: View {
     let cafes: [CafeSnapshot]
+    let pageSize: Int
+    let accessibilityContext: String
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedPage = 0
-    private let pageSize: Int
-    private let accessibilityContext: String
-
-    init(cafes: [CafeSnapshot], pageSize: Int = 3, accessibilityContext: String = "Cafés") {
-        self.cafes = cafes
-        self.pageSize = pageSize
-        self.accessibilityContext = accessibilityContext
-    }
 
     private var pageCount: Int {
         max(1, (cafes.count + pageSize - 1) / pageSize)
     }
 
+    // Slice the current page before the grid lays out its cards.
     private var visibleCafes: [CafeSnapshot] {
         Array(cafes.dropFirst(selectedPage * pageSize).prefix(pageSize))
     }
@@ -75,6 +72,7 @@ struct CafePager: View {
                     .tint(AppColor.accent)
                 }
             }
+            // A refresh may leave the current page beyond the end of the list.
             .onChange(of: cafes.map(\.id)) {
                 selectedPage = min(selectedPage, pageCount - 1)
             }

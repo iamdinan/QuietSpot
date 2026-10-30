@@ -1,9 +1,4 @@
-//
-//  ContentView.swift
-//  QuietSpot
-//
-//  Created by Student1 on 2026-10-01.
-//
+// Chooses between onboarding, account screens, and the signed-in tabs.
 
 import SwiftUI
 
@@ -20,6 +15,7 @@ struct ContentView: View {
             } else if authentication.isCreatingAccount {
                 ProgressView("Creating your account…")
             } else if let userID = authentication.userID {
+                // Recreate tab state when a different account signs in.
                 MainTabView(onSignOut: authentication.signOut, profile: $authentication.profile)
                     .id(userID)
             } else {
@@ -53,6 +49,7 @@ struct ContentView: View {
         }
         .environment(authentication)
         .task { authentication.start() }
+        // Clear account routes after sign-in or sign-out.
         .onChange(of: authentication.userID) { _, _ in
             navigationPath = NavigationPath()
         }

@@ -1,3 +1,5 @@
+// Shared slider for the map radius saved in app settings.
+
 import SwiftUI
 
 struct MapRadiusControl: View {

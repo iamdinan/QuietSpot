@@ -1,3 +1,5 @@
+// Keeps posts, likes, and author profiles in sync with Firestore.
+
 import FirebaseFirestore
 import Foundation
 import Observation
@@ -28,6 +30,7 @@ final class CommunityViewModel {
         for listener in authorListeners.values { listener.remove() }
     }
 
+    // Reset listeners when the account changes or the feed reconnects.
     func start(userID: String) {
         postsListener?.remove()
         for listener in likeListeners.values { listener.remove() }
@@ -107,6 +110,7 @@ final class CommunityViewModel {
         }
     }
 
+    // Each post needs its own like state; authors are watched for profile edits.
     private func observeRelatedData(userID: String, generation: UUID) {
         let postIDs = Set(insights.map(\.id))
         let authorIDs = Set(insights.map(\.authorID))

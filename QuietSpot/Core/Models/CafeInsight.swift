@@ -1,3 +1,5 @@
+// Community post as displayed in the feed, including like state.
+
 import Foundation
 
 struct CafeInsight: Identifiable {

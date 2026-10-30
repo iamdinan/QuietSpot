@@ -1,3 +1,5 @@
+// Saves check-ins and listens for the three most recent confirmed reports.
+
 import FirebaseAuth
 import FirebaseCore
 import FirebaseFirestore
@@ -29,6 +31,7 @@ struct CafeCheckInService {
             ])
     }
 
+    // Server-confirmed snapshots also feed the notification monitor.
     func observeLatest(
         cafeID: String,
         onConfirmedChange: (([CafeCheckIn]) -> Void)? = nil,

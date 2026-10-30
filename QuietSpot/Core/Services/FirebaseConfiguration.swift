@@ -1,3 +1,5 @@
+// Checks the bundled Firebase settings before configuring the SDK.
+
 import FirebaseCore
 import Foundation
 

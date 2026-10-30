@@ -46,7 +46,9 @@ To run one suite, append `-only-testing:QuietSpotTests/NotificationPolicyTests`.
 
 ## Verification
 
-Verified on October 5, 2026 with Xcode 26.2 on the iPhone 17 Pro simulator running iOS 26.3: **40 tests in 10 suites passed**, including all parameterized cases. The simulator build and `git diff --check` also passed. ImageIO can print thumbnail errors during corrupt-photo cases; those cases intentionally expect an error, and their Swift Testing results pass.
+Verified on October 30, 2026 with Xcode 26.2 on the iPhone 17 Pro simulator running iOS 26.3.1: **40 tests in 10 suites passed**, including all parameterized cases. The simulator build after the carousel height change and `git diff --check` also passed. ImageIO can print thumbnail errors during corrupt-photo cases; those cases intentionally expect an error, and their Swift Testing results pass.
+
+These results cover local unit behavior and compilation. They do not verify live Firebase access, deployed security rules, network availability, or visual carousel sizing. The Home carousels and radius integration require the manual checks below.
 
 ## Design and maintenance
 
@@ -62,10 +64,19 @@ Verified on October 5, 2026 with Xcode 26.2 on the iPhone 17 Pro simulator runni
 These require system services or a configured Firebase backend and are not mocked by this unit suite:
 
 - Authentication: create/sign in/reset/sign out, restore a session and verify Firestore rules for different accounts.
+- Home carousels: populate favorites and nearby cafés with one-line and multiline names/areas, missing reports, loading/error states, and different check-in ages. Confirm equal card heights within each row, readable text, a visible next-card edge when more cards remain, snapping, and navigation to the correct café. Repeat on iPad, narrow windows, and accessibility text sizes; confirm the Favorite café pulse and Explore pagination still work.
+- Nearby radius: simulate a known location and use café coordinates inside and outside the selected radius. Change the radius in Map and return to Home; confirm membership, count, and latest-check-in ordering update. Test no matches, denied permission, no location fix, approximate location, background/foreground transitions, and returning from Settings after allowing location. Confirm map pins still include all loaded cafés.
 - Community deletion: with two accounts, verify only the author sees the post menu in Community and My Insights. Cancel leaves the post unchanged; confirm removes it from both feeds and another signed-in device. Check offline disabling, permission-denied failures retaining the post, repeated taps, concurrent likes/deletion, and signing out during deletion. Verify a direct delete request by the other account is rejected by server rules. See [backend requirements](docs/community-post-deletion.md).
 - Offline: load data online, keep the session signed in, disconnect the Mac and relaunch the simulator. Check cached photos/profiles/favourites/reports/posts, disabled saving actions and reconnect recovery.
 - Notifications: allow notifications and location access, favourite a café inside the radius, keep the app active and submit a **new** check-in with at least one changed stat. Confirm a banner; identical stats intentionally remain silent. Test disabled/out-of-radius cases too.
 - Widgets and Siri: provision the shared App Group, add the widget, sync favourites, and execute both App Shortcuts. Verify account clearing, foreground/background behaviour and spoken output.
 - UI/accessibility: tab navigation, Dynamic Type, VoiceOver, colour appearance and permission prompts.
+
+## Startup troubleshooting
+
+- Run the shared **QuietSpot** scheme with the normal Run action. `QUIETSPOT_UNIT_TESTS=1` belongs only to the Test action; it deliberately prevents the normal app and Firebase startup. Personal Xcode scheme ordering files are separate from this shared configuration.
+- If account screens report a configuration error, check that the bundled `GoogleService-Info.plist` matches the target bundle ID. The preconfiguration `FirebaseApp.app()` check can emit `I-COR000003` before the app is configured; inspect subsequent errors and app behavior before treating it as a failure.
+- `No network route` indicates a failed network connection attempt. Check connectivity on the Mac/device and simulator, then retry loading. Unit-test success does not confirm live connectivity.
+- For an app termination, capture the exception and stack trace in Xcode. Configuration and connection log messages alone do not establish the cause of a crash.
 
 References: [Swift Testing](https://developer.apple.com/documentation/testing), [adding tests to an Xcode project](https://developer.apple.com/documentation/xcode/adding-tests-to-your-xcode-project), [test parallelization](https://developer.apple.com/documentation/testing/parallelization).

@@ -1,3 +1,5 @@
+// Checks when a changed cafe report should trigger an alert.
+
 import CoreLocation
 import Foundation
 import Testing

@@ -1,3 +1,5 @@
+// Loads cafe metadata and keeps each cafe updated from live check-ins.
+
 import Foundation
 import FirebaseFirestore
 import Observation
@@ -64,11 +66,13 @@ final class CafeViewModel {
         }
     }
 
+    // Replace old listeners after a cafe refresh so removed cafes cannot update the UI.
     private func observeStatuses() {
         for listener in statusListeners.values { listener.remove() }
         statusListeners.removeAll()
         statusErrors.removeAll()
         listenerGeneration = UUID()
+        // Ignore callbacks from listeners created before this refresh.
         let generation = listenerGeneration
 
         for cafe in cafes {

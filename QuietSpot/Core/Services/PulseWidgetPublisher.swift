@@ -1,3 +1,5 @@
+// Copies favorite cafe conditions into the widget shared store.
+
 import OSLog
 import WidgetKit
 
@@ -14,6 +16,7 @@ enum PulseWidgetPublisher {
         }
     }
 
+    // The widget gets the latest three favorites, including loading states.
     static func content(cafes: [CafeSnapshot]) -> PulseWidgetContent {
         let favorites = cafes.filter(\.isFavorite).sorted(by: CafeSnapshot.latestFirst).prefix(3)
         return PulseWidgetContent(state: .ready, cafes: favorites.map { cafe in

@@ -1,3 +1,5 @@
+// Shrinks picked photos before they are stored with a profile.
+
 import Foundation
 import ImageIO
 import UIKit

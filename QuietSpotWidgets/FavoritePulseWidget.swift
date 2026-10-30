@@ -1,3 +1,5 @@
+// Widget timeline and views for the last synced favorite cafe pulse.
+
 import SwiftUI
 import WidgetKit
 
@@ -25,6 +27,7 @@ struct PulseProvider: TimelineProvider {
         completion(context.isPreview ? .example : PulseEntry(date: .now, snapshot: PulseWidgetStore().load()))
     }
 
+    // WidgetKit reads the app's saved snapshot; it does not contact Firestore.
     func getTimeline(in context: Context, completion: @escaping (Timeline<PulseEntry>) -> Void) {
         let now = Date()
         let snapshot = PulseWidgetStore().load()

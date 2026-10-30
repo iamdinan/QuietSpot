@@ -1,7 +1,4 @@
-//
-//  MainTabView.swift
-//  QuietSpot
-//
+// Keeps the five tabs on the same cafe, community, and location state.
 
 import SwiftUI
 
@@ -20,7 +17,7 @@ struct MainTabView: View {
     var body: some View {
         @Bindable var cafeData = cafeViewModel
         TabView {
-            HomeView(cafes: $cafeData.cafes, onRefresh: { await cafeViewModel.load() })
+            HomeView(cafes: $cafeData.cafes, location: location, onRefresh: { await cafeViewModel.load() })
                 .tabItem {
                     Label("Home", systemImage: "house")
                 }
@@ -53,6 +50,7 @@ struct MainTabView: View {
         .onChange(of: communitySiriSnapshot, initial: true) { _, snapshot in
             snapshot.save()
         }
+        // Reload cafe data when connectivity changes; listeners handle later reports.
         .task(id: NetworkStatus.shared.isOffline) {
             refreshNotificationContext()
             cafeViewModel.onConfirmedStatusChange = { [cafeNotifications] cafe, report in
@@ -143,6 +141,7 @@ struct MainTabView: View {
         }
     }
 
+    // Alerts depend on the current account, favorites, location, and app state.
     private func refreshNotificationContext() {
         cafeNotifications.updateContext(
             userID: authentication.userID,
@@ -153,6 +152,7 @@ struct MainTabView: View {
         )
     }
 
+    // Build the widget state from the currently loaded favorites and cafes.
     private var widgetContent: PulseWidgetContent {
         guard authentication.isUserDataReady else { return PulseWidgetContent(state: .loading) }
         if !authentication.favoriteCafeIDs.isEmpty && cafeViewModel.cafes.isEmpty {

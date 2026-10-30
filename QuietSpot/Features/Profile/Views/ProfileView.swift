@@ -1,3 +1,5 @@
+// Profile hub for account details, personal posts, and settings.
+
 import SwiftUI
 
 struct ProfileView: View {

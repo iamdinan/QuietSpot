@@ -1,3 +1,5 @@
+// Prepares profile edits, including resized photo data, before saving.
+
 import Foundation
 import Observation
 import PhotosUI

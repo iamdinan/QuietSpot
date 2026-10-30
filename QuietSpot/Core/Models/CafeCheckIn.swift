@@ -1,3 +1,5 @@
+// Cafe conditions and report time used by the UI.
+
 import Foundation
 
 struct CafeCheckIn: Identifiable {

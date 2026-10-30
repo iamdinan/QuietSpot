@@ -1,3 +1,5 @@
+// Shows one cafe, its recent reports, favorite action, and check-in entry.
+
 import SwiftUI
 
 struct CafeDetailsView: View {
@@ -89,6 +91,7 @@ struct CafeDetailsView: View {
                 .readableContent()
                 .background(.bar)
         }
+        // Show thanks after the saved form closes, not while it is still on screen.
         .sheet(isPresented: $showsCheckIn, onDismiss: {
             if didSubmitCheckIn {
                 showsConfirmation = true

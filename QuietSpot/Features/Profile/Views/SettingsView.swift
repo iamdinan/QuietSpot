@@ -1,3 +1,5 @@
+// Groups notification, appearance, accessibility, and account settings.
+
 import SwiftUI
 
 struct SettingsView: View {

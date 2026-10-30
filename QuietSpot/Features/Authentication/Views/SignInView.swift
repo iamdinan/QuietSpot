@@ -1,7 +1,4 @@
-//
-//  SignInView.swift
-//  QuietSpot
-//
+// Sign-in form and its links to registration and password recovery.
 
 import SwiftUI
 

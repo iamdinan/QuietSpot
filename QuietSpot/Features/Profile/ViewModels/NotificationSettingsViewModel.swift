@@ -1,3 +1,5 @@
+// Loads notification permission for the cafe alert settings screen.
+
 import Observation
 import UserNotifications
 

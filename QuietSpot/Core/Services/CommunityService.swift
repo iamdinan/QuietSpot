@@ -1,3 +1,5 @@
+// Firestore reads and writes for posts and per-user likes.
+
 import FirebaseAuth
 import FirebaseFirestore
 import Foundation
@@ -6,6 +8,7 @@ import Foundation
 final class CommunityService {
     private var posts: CollectionReference { Firestore.firestore().collection("communityPosts") }
 
+    // Only committed posts enter the feed; cached posts remain available offline.
     func observePosts(onChange: @escaping (Result<[CafeInsight], Error>) -> Void) -> ListenerRegistration {
         posts.order(by: "createdAt", descending: true)
             .addSnapshotListener(includeMetadataChanges: true) { snapshot, error in

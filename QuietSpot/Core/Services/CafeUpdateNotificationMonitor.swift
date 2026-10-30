@@ -1,3 +1,5 @@
+// Turns changed check-ins into alerts when the current context allows them.
+
 import CoreLocation
 import OSLog
 
@@ -39,6 +41,7 @@ final class CafeUpdateNotificationMonitor {
         }
     }
 
+    // Record every confirmed report before checking whether alerts are enabled.
     func receive(cafe: CafeSnapshot, latest: CafeCheckIn?) {
         guard let report = tracker.consume(cafeID: cafe.id, latest: latest) else {
             logger.debug("No new changed report for café \(cafe.id, privacy: .public)")

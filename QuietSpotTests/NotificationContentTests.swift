@@ -1,3 +1,5 @@
+// Checks the wording and identity of cafe update notifications.
+
 import Testing
 @testable import QuietSpot
 

@@ -1,3 +1,5 @@
+// Checks whether a cafe update is eligible for a local alert.
+
 import CoreLocation
 
 struct CafeUpdateNotificationContext {

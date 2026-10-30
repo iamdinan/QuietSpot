@@ -1,3 +1,5 @@
+// Tracks check-in submission so the form closes only after a successful save.
+
 import Foundation
 import Observation
 

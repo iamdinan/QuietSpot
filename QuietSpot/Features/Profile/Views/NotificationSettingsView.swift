@@ -1,3 +1,5 @@
+// Lets users control local cafe update alerts and request permission.
+
 import SwiftUI
 import UserNotifications
 

@@ -1,3 +1,5 @@
+// Entry screen for the community feed and post composer.
+
 import SwiftUI
 
 struct CommunityView: View {

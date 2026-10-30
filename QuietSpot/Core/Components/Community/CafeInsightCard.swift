@@ -1,3 +1,5 @@
+// Displays a post with author details, likes, and owner actions.
+
 import SwiftUI
 
 struct CafeInsightCard: View {

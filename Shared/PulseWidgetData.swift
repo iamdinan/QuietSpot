@@ -1,3 +1,5 @@
+// Types and storage shared by the app and its favorite cafe widget.
+
 import Foundation
 
 nonisolated struct PulseWidgetCafe: Codable, Equatable, Identifiable {
@@ -50,6 +52,7 @@ nonisolated struct PulseWidgetStore {
     }
 
     @discardableResult
+    // Skip identical snapshots so the app only reloads the widget when data changes.
     func save(_ content: PulseWidgetContent, now: Date = .now) throws -> Bool {
         guard let containerURL else { throw CocoaError(.fileNoSuchFile) }
         guard load()?.content != content else { return false }

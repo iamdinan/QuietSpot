@@ -1,3 +1,5 @@
+// Fetches cafe metadata from Firestore or its offline cache.
+
 import FirebaseFirestore
 import FirebaseCore
 import Foundation

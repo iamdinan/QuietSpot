@@ -1,3 +1,5 @@
+// Saves a small community post snapshot for the Siri shortcut.
+
 import Foundation
 
 struct CommunityPostSiriSnapshot: Codable, Equatable {
@@ -19,6 +21,7 @@ struct CommunityPostSiriSnapshot: Codable, Equatable {
         UserDefaults.standard.set(data, forKey: Self.key)
     }
 
+    // Keep only the newest post and the details Siri needs to speak it.
     static func content(posts: [CafeInsight], cafes: [CafeSnapshot], isLoading: Bool, hasError: Bool) -> Self {
         guard !isLoading else { return Self(state: .loading) }
         guard !hasError else { return Self(state: .unavailable) }

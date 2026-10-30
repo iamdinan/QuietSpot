@@ -1,3 +1,5 @@
+// Reusable feed for all community posts or just the user's posts.
+
 import SwiftUI
 
 struct CafeInsightFeed: View {

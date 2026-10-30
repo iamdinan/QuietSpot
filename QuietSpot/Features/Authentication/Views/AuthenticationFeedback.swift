@@ -1,3 +1,5 @@
+// Shared progress and error display for account forms.
+
 import SwiftUI
 
 struct AuthenticationFeedback: View {

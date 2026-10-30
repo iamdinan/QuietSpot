@@ -1,3 +1,5 @@
+// Creates a community post while keeping the draft if sharing fails.
+
 import SwiftUI
 
 struct InsightComposerView: View {

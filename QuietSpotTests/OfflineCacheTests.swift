@@ -1,3 +1,5 @@
+// Checks when cached query results are safe to show.
+
 import Testing
 @testable import QuietSpot
 

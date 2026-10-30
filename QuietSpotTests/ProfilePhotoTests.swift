@@ -1,3 +1,5 @@
+// Checks photo resizing and corrupt image handling.
+
 import Foundation
 import ImageIO
 import Testing

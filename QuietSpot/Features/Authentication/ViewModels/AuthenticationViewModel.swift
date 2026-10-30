@@ -1,3 +1,5 @@
+// Owns the current session, profile, favorites, and account actions.
+
 import LocalAuthentication
 import Foundation
 import Observation
@@ -43,6 +45,7 @@ final class AuthenticationViewModel {
         hasStarted && configurationError == nil && !isRestoringSession && !isBusy
     }
 
+    // Restore a Firebase session once, then attach the account data listeners.
     func start() {
         guard !hasStarted else { return }
         hasStarted = true
@@ -146,6 +149,7 @@ final class AuthenticationViewModel {
         observeUserData(userID: userID, defaultName: profile.displayName)
     }
 
+    // Both listeners must return before screens can use profile and favorite data.
     private func observeUserData(userID: String, defaultName: String) {
         userDataTask?.cancel()
         profileListener?.remove()

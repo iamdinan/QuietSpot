@@ -1,9 +1,4 @@
-//
-//  QuietSpotApp.swift
-//  QuietSpot
-//
-//  Created by Student1 on 2026-10-01.
-//
+// App entry point: applies appearance and starts services needed across the app.
 
 import AppIntents
 import SwiftUI

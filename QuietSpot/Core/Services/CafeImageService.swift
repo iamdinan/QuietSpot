@@ -1,3 +1,5 @@
+// Fetches cafe photos once and shares them through an in-memory cache.
+
 import FirebaseCore
 import FirebaseFirestore
 import UIKit
@@ -25,6 +27,7 @@ final class CafeImageService {
         return try await task.value
     }
 
+    // Image documents use the same ID as their cafe metadata document.
     private func fetchImage(for cafeID: String) async throws -> UIImage {
         guard FirebaseApp.app() != nil else { throw ImageError.notConfigured }
         let document = try await Firestore.firestore()

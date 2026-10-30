@@ -1,3 +1,5 @@
+// Shows community posts written by the current user.
+
 import SwiftUI
 
 struct MyInsightsView: View {
